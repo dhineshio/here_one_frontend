@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { Bell, User, Share2, Settings, CreditCard, LogOut, UserCog } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -15,6 +16,16 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function Topbar() {
+  const router = useRouter()
+
+  const handleLogout = () => {
+    // Clear any authentication tokens/data here if needed
+    // localStorage.removeItem('auth-token') // Example
+    
+    // Redirect to sign-in page and replace history entry
+    router.replace('/signin')
+  }
+
   return (
     <header className="z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-16 items-center justify-between px-6 md:px-12">
@@ -82,7 +93,12 @@ export function Topbar() {
               </DropdownMenuItem>
               <DropdownMenuSeparator className="my-2" />
               <DropdownMenuItem className="px-3 py-2 focus:bg-transparent" asChild>
-                <Button variant="outline" className="w-full justify-center h-auto">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-center h-auto"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>
                 </Button>
               </DropdownMenuItem>
