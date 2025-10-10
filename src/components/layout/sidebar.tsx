@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { usePathname } from "next/navigation"
 import {
   Home,
   Users,
@@ -25,6 +26,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isCollapsed = false, onToggle }: SidebarProps) {
+  const pathname = usePathname()
   const [selectedClient, setSelectedClient] = React.useState("Pothys")
   const [isClientDropdownOpen, setIsClientDropdownOpen] = React.useState(false)
 
@@ -34,8 +36,7 @@ export function Sidebar({ isCollapsed = false, onToggle }: SidebarProps) {
     {
       title: "Home",
       icon: Home,
-      href: "/",
-      isActive: true
+      href: "/"
     },
     {
       title: "Clients",
@@ -69,6 +70,12 @@ export function Sidebar({ isCollapsed = false, onToggle }: SidebarProps) {
     }
   ]
 
+  const isActive = (href: string) => {
+    if (href === "/" && pathname === "/") return true
+    if (href !== "/" && pathname.startsWith(href)) return true
+    return false
+  }
+
   return (
     <div className={cn(
       "relative flex flex-col h-full bg-background border-r transition-all duration-300 ease-in-out",
@@ -97,7 +104,7 @@ export function Sidebar({ isCollapsed = false, onToggle }: SidebarProps) {
           {menuItems.map((item) => (
             <Button
               key={item.href}
-              variant={item.isActive ? "secondary" : "ghost"}
+              variant={isActive(item.href) ? "secondary" : "ghost"}
               className={cn(
                 "w-full justify-start h-10 text-left font-normal",
                 isCollapsed && "px-2"
