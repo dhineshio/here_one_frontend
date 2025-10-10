@@ -21,14 +21,14 @@ export function Topbar() {
   const handleLogout = () => {
     // Clear any authentication tokens/data here if needed
     // localStorage.removeItem('auth-token') // Example
-    
+
     // Redirect to sign-in page and replace history entry
     router.replace('/signin')
   }
 
   return (
     <header className="z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-16 items-center justify-between px-6 md:px-12">
+      <div className="flex h-18 items-center justify-between px-4">
         {/* Left side - Logo */}
         <div className="flex items-center space-x-3">
           <div className="flex items-center justify-center w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
@@ -43,7 +43,7 @@ export function Topbar() {
         <div className="flex items-center space-x-3">
           {/* Theme Toggle */}
           <ModeToggle />
-          
+
           {/* Announcements/Notifications */}
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-8 w-8" />
@@ -93,8 +93,8 @@ export function Topbar() {
               </DropdownMenuItem>
               <DropdownMenuSeparator className="my-2" />
               <DropdownMenuItem className="px-3 py-2 focus:bg-transparent" asChild>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full justify-center h-auto"
                   onClick={handleLogout}
                 >

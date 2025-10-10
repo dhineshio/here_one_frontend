@@ -79,10 +79,10 @@ export function Sidebar({ isCollapsed = false, onToggle }: SidebarProps) {
   return (
     <div className={cn(
       "relative flex flex-col h-full bg-background border-r transition-all duration-300 ease-in-out",
-      isCollapsed ? "w-16" : "w-64"
+      isCollapsed ? "w-18" : "w-64"
     )}>
       {/* Toggle Button */}
-      <div className="absolute -right-3 top-6 z-10">
+      <div className="absolute -right-3 top-7 z-10">
         <Button
           variant="outline"
           size="icon"
@@ -100,24 +100,24 @@ export function Sidebar({ isCollapsed = false, onToggle }: SidebarProps) {
       {/* Sidebar Content */}
       <div className="flex-1 py-4">
         {/* Navigation Menu */}
-        <nav className="px-3 space-y-1">
+        <nav className={cn("space-y-2", isCollapsed ? "px-2" : "px-3")}>
           {menuItems.map((item) => (
             <Button
               key={item.href}
               variant={isActive(item.href) ? "secondary" : "ghost"}
               className={cn(
-                "w-full justify-start h-10 text-left font-normal",
-                isCollapsed && "px-2"
+                "w-full h-12 text-left font-medium",
+                isCollapsed ? "justify-center px-0" : "justify-start"
               )}
               asChild
             >
-              <a href={item.href}>
+              <a href={item.href} title={isCollapsed ? item.title : undefined}>
                 <item.icon className={cn(
-                  "h-4 w-4 flex-shrink-0",
-                  !isCollapsed && "mr-3"
+                  "h-5 w-5 flex-shrink-0",
+                  !isCollapsed && "mr-4"
                 )} />
                 {!isCollapsed && (
-                  <span className="truncate">{item.title}</span>
+                  <span className="truncate text-base">{item.title}</span>
                 )}
               </a>
             </Button>
@@ -141,7 +141,7 @@ export function Sidebar({ isCollapsed = false, onToggle }: SidebarProps) {
               </div>
               <ArrowLeftRight className="h-4 w-4" />
             </Button>
-            
+
             {isClientDropdownOpen && (
               <div className="absolute bottom-full left-0 right-0 mb-2 bg-popover border rounded-lg shadow-lg z-50">
                 {clients.map((client) => (
@@ -170,8 +170,10 @@ export function Sidebar({ isCollapsed = false, onToggle }: SidebarProps) {
         ) : (
           /* Collapsed footer - just client initial */
           <div className="flex justify-center">
-            <div className="h-8 w-8 bg-primary/10 rounded-md flex items-center justify-center">
-              <User className="h-4 w-4 text-primary" />
+            <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center" title={selectedClient}>
+              <span className="text-sm font-semibold text-primary">
+                {selectedClient.charAt(0)}
+              </span>
             </div>
           </div>
         )}
