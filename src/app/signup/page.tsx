@@ -6,40 +6,61 @@ import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/theme/theme-toggle"
 import { Eye, EyeOff, Share2, MessageCircle, Heart, Users, TrendingUp, BarChart3, Globe } from "lucide-react"
 
-export default function SignInPage() {
+export default function SignUpPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = React.useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
   const [error, setError] = React.useState("")
+  const [success, setSuccess] = React.useState("")
   const [formData, setFormData] = React.useState({
+    fullName: "",
     email: "",
-    password: ""
+    password: "",
+    confirmPassword: ""
   })
-
-  // Sample credentials
-  const SAMPLE_EMAIL = "admin@gmail.com"
-  const SAMPLE_PASSWORD = "qwerty@123"
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     })
-    // Clear error when user starts typing
+    // Clear messages when user starts typing
     if (error) setError("")
+    if (success) setSuccess("")
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Handle signin logic
-    if (formData.email === SAMPLE_EMAIL && formData.password === SAMPLE_PASSWORD) {
-      // Successful login - redirect to home
-      console.log("Login successful")
-      router.push("/")
-    } else {
-      // Invalid credentials
-      setError("Invalid email or password. Try admin@gmail.com / qwerty@123")
+    // Basic validation
+    if (!formData.fullName.trim()) {
+      setError("Full name is required")
+      return
     }
+    
+    if (!formData.email.trim()) {
+      setError("Email is required")
+      return
+    }
+    
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters")
+      return
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match")
+      return
+    }
+    
+    // Simulate successful signup
+    console.log("Sign up successful:", formData)
+    setSuccess("Account created successfully! Redirecting...")
+    
+    // Redirect to sign-in page after 2 seconds
+    setTimeout(() => {
+      router.push("/signin")
+    }, 2000)
   }
 
   return (
@@ -110,16 +131,18 @@ export default function SignInPage() {
           {/* Header */}
           <div className="text-center">
             <h1 className="text-2xl font-bold">
-              Sign In
+              Create Account
             </h1>
           </div>
 
-          {/* Sample Credentials Hint */}
-          <div className="text-center p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md">
-            <p className="text-xs text-blue-600 dark:text-blue-400">
-              Demo: admin@gmail.com / qwerty@123
-            </p>
-          </div>
+          {/* Success Message */}
+          {success && (
+            <div className="text-center p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-md">
+              <p className="text-xs text-green-600 dark:text-green-400">
+                {success}
+              </p>
+            </div>
+          )}
 
           {/* Error Message */}
           {error && (
@@ -132,9 +155,26 @@ export default function SignInPage() {
 
           {/* Form */}
           <form className="space-y-4" onSubmit={handleSubmit}>
+            {/* Full Name Field */}
+            <div className="space-y-2">
+              <label htmlFor="fullName" className="text-xs font-medium">
+                Full Name
+              </label>
+              <input
+                id="fullName"
+                name="fullName"
+                type="text"
+                required
+                value={formData.fullName}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent placeholder:text-xs"
+                placeholder="Enter your full name"
+              />
+            </div>
+
             {/* Email Field */}
-            <div className="space-y-3">
-              <label htmlFor="email" className="text-sm font-medium">
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-xs font-medium">
                 Email
               </label>
               <input
@@ -150,8 +190,8 @@ export default function SignInPage() {
             </div>
 
             {/* Password Field */}
-            <div className="space-y-3">
-              <label htmlFor="password" className="text-sm font-medium">
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-xs font-medium">
                 Password
               </label>
               <div className="relative">
@@ -175,36 +215,51 @@ export default function SignInPage() {
               </div>
             </div>
 
-            {/* Remember me / Forgot password */}
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" className="rounded border-input" />
-                <span>Remember me</span>
+            {/* Confirm Password Field */}
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="text-xs font-medium">
+                Confirm Password
               </label>
-              <a href="#" className="text-primary hover:underline">
-                Forgot password?
-              </a>
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  required
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 pr-10 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent placeholder:text-xs"
+                  placeholder="Confirm your password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
 
             {/* Submit Button */}
             <Button type="submit" className="w-full">
-              Sign In
+              Create Account
             </Button>
           </form>
         </div>
 
-        {/* Sign Up Toggle */}
+        {/* Sign In Toggle */}
         <div className="text-center p-4 bg-muted/30 rounded-lg border border-border">
           <p className="text-sm text-muted-foreground mb-3">
-            Don't have an account?
+            Already have an account?
           </p>
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push('/signup')}
+            onClick={() => router.push('/signin')}
             className="w-full"
           >
-            Create Account
+            Sign In
           </Button>
         </div>
 
