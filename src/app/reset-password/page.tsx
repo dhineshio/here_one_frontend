@@ -7,15 +7,16 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, LockIcon } from "lucide-react";
 import { useState } from "react";
 
-export default function SignIn() {
+export default function ResetPassword() {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   return (
     <div className="mx-auto flex h-screen w-full">
-      {/* Left Side - Login Form */}
+      {/* Left Side - Reset Password Form */}
       <div className="flex flex-1 items-center justify-center bg-background p-8">
         <div className="w-sm space-y-8">
           <div className="flex items-center gap-2">
@@ -28,47 +29,17 @@ export default function SignIn() {
             <h2 className="text-xl font-bold text-primary">CreatorScribe</h2>
           </div>
           <div className="space-y-2">
-            <h2 className="text-3xl font-bold">Sign in to your account</h2>
-            <p className="text-sm">Welcome back! Select method to sign in:</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="lg" className="flex-1 py-6!">
-              <Image
-                src="/icons/ic_google.svg"
-                alt="Google"
-                width={24}
-                height={24}
-              />
-              Google
-            </Button>
-            <Button variant="outline" size="lg" className="flex-1 py-6!">
-              <Image
-                src="/icons/ic_facebook.svg"
-                alt="Facebook"
-                width={24}
-                height={24}
-              />
-              Facebook
-            </Button>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="h-px flex-1 bg-gray-300"></div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              or continue with email
+            <h2 className="text-3xl font-bold">Set new password</h2>
+            <p className="text-sm">
+              Your new password must be different from previously used
+              passwords.
             </p>
-            <div className="h-px flex-1 bg-gray-300"></div>
           </div>
           <form className="space-y-4">
             <InputGroup className="py-5!">
-              <InputGroupInput type="email" placeholder="Email" />
-              <InputGroupAddon className="mx-2">
-                <MailIcon className="size-5!" />
-              </InputGroupAddon>
-            </InputGroup>
-            <InputGroup className="py-5!">
               <InputGroupInput
                 type={showPassword ? "text" : "password"}
-                placeholder="Password"
+                placeholder="New Password"
               />
               <InputGroupAddon className="mx-2">
                 <LockIcon className="size-5!" />
@@ -84,26 +55,44 @@ export default function SignIn() {
                 )}
               </InputGroupAddon>
             </InputGroup>
-            <div className="flex items-center justify-between px-2 mt-6">
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" className="size-4 cursor-pointer" />
-                <span>Remember me</span>
-              </label>
-              <a
-                href="/forgot-password"
-                className="text-sm font-medium text-primary hover:underline"
+            <InputGroup className="py-5!">
+              <InputGroupInput
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm Password"
+              />
+              <InputGroupAddon className="mx-2">
+                <LockIcon className="size-5!" />
+              </InputGroupAddon>
+              <InputGroupAddon
+                align="inline-end"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
-                Forgot password?
-              </a>
+                {showConfirmPassword ? (
+                  <EyeIcon className="size-5!" />
+                ) : (
+                  <EyeOffIcon className="size-5!" />
+                )}
+              </InputGroupAddon>
+            </InputGroup>
+            <div className="px-2 mt-4 space-y-2">
+              <p className="text-xs text-muted-foreground">
+                Password must contain:
+              </p>
+              <ul className="text-xs text-muted-foreground space-y-1 ml-4">
+                <li>• At least 8 characters</li>
+                <li>• At least one uppercase letter</li>
+                <li>• At least one lowercase letter</li>
+                <li>• At least one number</li>
+              </ul>
             </div>
             <Button className="w-full py-6! mt-6 cursor-pointer">
-              Sign In
+              Reset Password
             </Button>
           </form>
           <p className="text-sm text-center">
-            Don&apos;t have an account?{" "}
-            <a href="/signup" className="text-primary hover:underline">
-              Create an account
+            Remember your password?{" "}
+            <a href="/signin" className="text-primary hover:underline">
+              Sign in
             </a>
           </p>
         </div>

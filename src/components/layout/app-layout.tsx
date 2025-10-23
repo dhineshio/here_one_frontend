@@ -1,46 +1,18 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Topbar } from "./topbar"
-import { Sidebar } from "./sidebar"
+import { AppSidebar } from "../app-sidebar";
+import { SidebarProvider } from "../ui/sidebar";
+import { Topbar } from "./topbar";
 
-interface AppLayoutProps {
-  children: React.ReactNode
-}
-
-export function AppLayout({ children }: AppLayoutProps) {
-  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)
-
-  const toggleSidebar = () => {
-    setSidebarCollapsed(prev => !prev)
-  }
-
+export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
-      {/* Fixed Topbar */}
-      <div className="flex-shrink-0">
+    <SidebarProvider defaultOpen={true}>
+      {/* Fixed Topbar - outside SidebarInset */}
+      <div className="fixed top-0 left-0 right-0 z-20">
         <Topbar />
       </div>
-
-      {/* Main Content Area */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <div className="flex-shrink-0">
-          <Sidebar 
-            isCollapsed={sidebarCollapsed} 
-            onToggle={toggleSidebar}
-          />
-        </div>
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-auto bg-muted/10">
-          <div className="h-full p-6">
-            <div className="mx-auto max-w-7xl">
-              {children}
-            </div>
-          </div>
-        </main>
-      </div>
-    </div>
-  )
+      <AppSidebar className="mt-18 relative h-[calc(100vh-72px)]" />
+      {children}
+    </SidebarProvider>
+  );
 }

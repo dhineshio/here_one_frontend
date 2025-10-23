@@ -1,11 +1,18 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useRouter } from "next/navigation"
-import { Bell, User, Share2, Settings, CreditCard, LogOut, UserCog } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ModeToggle } from "@/components/theme/theme-toggle"
+import * as React from "react";
+import { useRouter } from "next/navigation";
+import {
+  Bell,
+  User,
+  Settings,
+  CreditCard,
+  LogOut,
+  UserCog,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ModeToggle } from "@/components/theme/theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,30 +20,56 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
+import { useTheme } from "next-themes";
+import AuthService from "@/lib/auth";
+import { SidebarTrigger, useSidebar } from "../ui/sidebar";
+import Image from "next/image";
 
 export function Topbar() {
-  const router = useRouter()
+  const { theme, resolvedTheme } = useTheme();
+  const router = useRouter();
+  const [mounted, setMounted] = React.useState(false);
+  const { isMobile } = useSidebar();
+
+  // Ensure component is mounted to avoid hydration mismatch
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
-    // Clear any authentication tokens/data here if needed
-    // localStorage.removeItem('auth-token') // Example
+    AuthService.logout();
+    router.replace("/signin");
+  };
 
-    // Redirect to sign-in page and replace history entry
-    router.replace('/signin')
-  }
+  const currentTheme = resolvedTheme || theme || "light";
 
   return (
-    <header className="z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="z-50 w-full border-b bg-background">
       <div className="flex h-18 items-center justify-between px-4">
         {/* Left side - Logo */}
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center justify-center w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
-            <Share2 className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-xl font-bold">
-            HereOne
-          </span>
+        <div className="flex items-center space-x-4">
+          {isMobile ? <SidebarTrigger></SidebarTrigger> : null}
+          {mounted ? (
+            <div className="flex items-center space-x-2 px-2">
+              <Image
+                src="/images/cs_logo.svg"
+                alt="CreatorScribe Logo"
+                width={34}
+                height={34}
+              />
+              <h2
+                className={`${
+                  isMobile ? "hidden" : ""
+                } text-lg font-semibold tracking-wide`}
+              >
+                CreatorScribe
+              </h2>
+            </div>
+          ) : (
+            // Show placeholder while theme is loading
+            <div className="w-28 h-8 bg-muted animate-pulse rounded" />
+          )}
         </div>
 
         {/* Right side - Icons */}
@@ -92,7 +125,10 @@ export function Topbar() {
                 <span>Settings</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="my-2" />
-              <DropdownMenuItem className="px-3 py-2 focus:bg-transparent" asChild>
+              <DropdownMenuItem
+                className="px-3 py-2 focus:bg-transparent"
+                asChild
+              >
                 <Button
                   variant="outline"
                   className="w-full justify-center h-auto"
@@ -107,5 +143,5 @@ export function Topbar() {
         </div>
       </div>
     </header>
-  )
+  );
 }

@@ -1,0 +1,150 @@
+"use client";
+
+import * as React from "react";
+import {
+  AudioWaveform,
+  Bot,
+  ChevronLeft,
+  ChevronRight,
+  Command,
+  GalleryVerticalEnd,
+  Home,
+  LayoutTemplate,
+  Link,
+  Rss,
+  Settings,
+} from "lucide-react";
+
+import { NavMain } from "@/components/nav-main";
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarRail,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { Button } from "./ui/button";
+import { ClientSwitcher } from "./client-switcher";
+import { IconCreditCard, IconHelp } from "@tabler/icons-react";
+import { NavSecondary } from "./nav-secondary";
+
+// This is sample data.
+const data = {
+  clients: [
+    {
+      name: "Acme Inc",
+      logo: GalleryVerticalEnd,
+      plan: "Enterprise",
+    },
+    {
+      name: "Acme Corp.",
+      logo: AudioWaveform,
+      plan: "Startup",
+    },
+    {
+      name: "Evil Corp.",
+      logo: Command,
+      plan: "Free",
+    },
+  ],
+  navMain: [
+    {
+      title: "Home",
+      url: "#",
+      icon: Home,
+      isActive: true,
+      items: [],
+    },
+    {
+      title: "Posts",
+      url: "#",
+      icon: Rss,
+      items: [
+        {
+          title: "Create Post",
+          url: "#",
+        },
+        {
+          title: "All Posts",
+          url: "#",
+        },
+        {
+          title: "Drafts",
+          url: "#",
+        },
+      ],
+    },
+    {
+      title: "Connections",
+      url: "#",
+      icon: Link,
+      items: [],
+    },
+    {
+      title: "Transcribe",
+      url: "#",
+      icon: Bot,
+      items: [],
+    },
+    {
+      title: "Templates",
+      url: "#",
+      icon: LayoutTemplate,
+      items: [],
+    },
+    {
+      title: "Settings",
+      url: "#",
+      icon: Settings,
+      items: [],
+    },
+  ],
+  navSecondary: [
+    {
+      title: "Pricing",
+      url: "#",
+      icon: IconCreditCard,
+    },
+    {
+      title: "Get Help",
+      url: "#",
+      icon: IconHelp,
+    },
+  ],
+};
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { open, setOpen, isMobile } = useSidebar();
+
+  return (
+    <Sidebar collapsible="icon" {...props}>
+      {!isMobile ? (
+        <Button
+          variant="outline"
+          onClick={() => setOpen(!open)}
+          size="icon"
+          className="w-8! h-8! absolute top-7 -right-4 z-50 rounded-full bg-background!"
+        >
+          {open ? <ChevronLeft /> : <ChevronRight />}
+        </Button>
+      ) : null}
+      <SidebarHeader></SidebarHeader>
+      <SidebarContent>
+        <NavMain items={data.navMain} />
+        <NavSecondary
+          items={data.navSecondary}
+          className="mt-auto group-data-[collapsible=icon]:hidden"
+        />
+      </SidebarContent>
+      <SidebarFooter className="border-t border-sidebar-border ">
+        <ClientSwitcher clients={data.clients} />
+        <p className="text-xs text-muted-foreground text-center group-data-[collapsible=icon]:hidden">
+          CreatorScribe &copy; {new Date().getFullYear()}
+        </p>
+      </SidebarFooter>
+      <SidebarRail />
+    </Sidebar>
+  );
+}
