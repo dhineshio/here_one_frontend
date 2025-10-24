@@ -1,3 +1,9 @@
+import AuthGuard from "@/components/auth/auth-guard";
+
 export default function Home() {
-  return <div></div>;
+  return (
+    <AuthGuard requireAuth={true}>
+      <div>Home</div>
+    </AuthGuard>
+  );
 }
