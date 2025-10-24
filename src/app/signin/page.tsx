@@ -9,9 +9,62 @@ import {
 } from "@/components/ui/input-group";
 import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from "lucide-react";
 import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      await signIn("google", { callbackUrl: "/dashboard" });
+    } catch (error) {
+      setError("Failed to sign in with Google");
+      setIsLoading(false);
+    }
+  };
+
+  const handleFacebookSignIn = async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      await signIn("facebook", { callbackUrl: "/dashboard" });
+    } catch (error) {
+      setError("Failed to sign in with Facebook");
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError(result.error);
+        setIsLoading(false);
+      } else if (result?.ok) {
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      setError("An error occurred during sign in");
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="mx-auto flex h-screen w-full">
@@ -32,7 +85,14 @@ export default function SignIn() {
             <p className="text-sm">Welcome back! Select method to sign in:</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="lg" className="flex-1 py-6!">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="flex-1 py-6!"
+              onClick={handleGoogleSignIn}
+              disabled={isLoading}
+              type="button"
+            >
               <Image
                 src="/icons/ic_google.svg"
                 alt="Google"
@@ -41,7 +101,14 @@ export default function SignIn() {
               />
               Google
             </Button>
-            <Button variant="outline" size="lg" className="flex-1 py-6!">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="flex-1 py-6!"
+              onClick={handleFacebookSignIn}
+              disabled={isLoading}
+              type="button"
+            >
               <Image
                 src="/icons/ic_facebook.svg"
                 alt="Facebook"
@@ -58,9 +125,20 @@ export default function SignIn() {
             </p>
             <div className="h-px flex-1 bg-gray-300"></div>
           </div>
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            {error && (
+              <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-md">
+                {error}
+              </div>
+            )}
             <InputGroup className="py-5!">
-              <InputGroupInput type="email" placeholder="Email" />
+              <InputGroupInput 
+                type="email" 
+                placeholder="Email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
               <InputGroupAddon className="mx-2">
                 <MailIcon className="size-5!" />
               </InputGroupAddon>
@@ -69,6 +147,9 @@ export default function SignIn() {
               <InputGroupInput
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
               />
               <InputGroupAddon className="mx-2">
                 <LockIcon className="size-5!" />
@@ -96,8 +177,12 @@ export default function SignIn() {
                 Forgot password?
               </a>
             </div>
-            <Button className="w-full py-6! mt-6 cursor-pointer">
-              Sign In
+            <Button 
+              type="submit"
+              className="w-full py-6! mt-6 cursor-pointer"
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
           <p className="text-sm text-center">

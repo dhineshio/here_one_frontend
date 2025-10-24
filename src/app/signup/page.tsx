@@ -9,9 +9,77 @@ import {
 } from "@/components/ui/input-group";
 import { EyeIcon, EyeOffIcon, LockIcon, MailIcon, UserIcon } from "lucide-react";
 import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const router = useRouter();
+
+  const handleGoogleSignUp = async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      await signIn("google", { callbackUrl: "/dashboard" });
+    } catch (error) {
+      setError("Failed to sign up with Google");
+      setIsLoading(false);
+    }
+  };
+
+  const handleFacebookSignUp = async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      await signIn("facebook", { callbackUrl: "/dashboard" });
+    } catch (error) {
+      setError("Failed to sign up with Facebook");
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!agreeToTerms) {
+      setError("Please agree to the terms & conditions");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      // For email/password signup, you can call your existing backend API
+      // and then sign in with NextAuth
+      const [firstName, ...lastNameParts] = fullName.split(" ");
+      const lastName = lastNameParts.join(" ");
+
+      // Import your AuthService
+      const AuthService = (await import("@/lib/auth")).default;
+      
+      await AuthService.register({
+        first_name: firstName,
+        last_name: lastName || firstName,
+        email,
+        password,
+        user_type: "freelancer", // or get this from a form field
+      });
+
+      // After successful registration, redirect to verify-otp page
+      router.push(`/verify-otp?email=${encodeURIComponent(email)}&type=registration`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An error occurred during sign up";
+      setError(errorMessage);
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="mx-auto flex h-screen w-full">
@@ -32,7 +100,14 @@ export default function SignUp() {
             <p className="text-sm">Welcome! Select method to sign up:</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="lg" className="flex-1 py-6!">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="flex-1 py-6!"
+              onClick={handleGoogleSignUp}
+              disabled={isLoading}
+              type="button"
+            >
               <Image
                 src="/icons/ic_google.svg"
                 alt="Google"
@@ -41,7 +116,14 @@ export default function SignUp() {
               />
               Google
             </Button>
-            <Button variant="outline" size="lg" className="flex-1 py-6!">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="flex-1 py-6!"
+              onClick={handleFacebookSignUp}
+              disabled={isLoading}
+              type="button"
+            >
               <Image
                 src="/icons/ic_facebook.svg"
                 alt="Facebook"
@@ -58,15 +140,32 @@ export default function SignUp() {
             </p>
             <div className="h-px flex-1 bg-gray-300"></div>
           </div>
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            {error && (
+              <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-md">
+                {error}
+              </div>
+            )}
             <InputGroup className="py-5!">
-              <InputGroupInput type="text" placeholder="Full Name" />
+              <InputGroupInput 
+                type="text" 
+                placeholder="Full Name" 
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
               <InputGroupAddon className="mx-2">
                 <UserIcon className="size-5!" />
               </InputGroupAddon>
             </InputGroup>
             <InputGroup className="py-5!">
-              <InputGroupInput type="email" placeholder="Email" />
+              <InputGroupInput 
+                type="email" 
+                placeholder="Email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
               <InputGroupAddon className="mx-2">
                 <MailIcon className="size-5!" />
               </InputGroupAddon>
@@ -75,6 +174,9 @@ export default function SignUp() {
               <InputGroupInput
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
               />
               <InputGroupAddon className="mx-2">
                 <LockIcon className="size-5!" />
@@ -92,12 +194,21 @@ export default function SignUp() {
             </InputGroup>
             <div className="flex items-center justify-between px-2 mt-6">
               <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" className="size-4 cursor-pointer" />
+                <input 
+                  type="checkbox" 
+                  className="size-4 cursor-pointer" 
+                  checked={agreeToTerms}
+                  onChange={(e) => setAgreeToTerms(e.target.checked)}
+                />
                 <span>I agree to the terms & conditions</span>
               </label>
             </div>
-            <Button className="w-full py-6! mt-6 cursor-pointer">
-              Sign Up
+            <Button 
+              type="submit"
+              className="w-full py-6! mt-6 cursor-pointer"
+              disabled={isLoading}
+            >
+              {isLoading ? "Creating account..." : "Sign Up"}
             </Button>
           </form>
           <p className="text-sm text-center">

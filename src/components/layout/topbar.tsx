@@ -22,9 +22,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes";
-import AuthService from "@/lib/auth";
 import { SidebarTrigger, useSidebar } from "../ui/sidebar";
 import Image from "next/image";
+import { signOut } from "next-auth/react";
 
 export function Topbar() {
   const { theme, resolvedTheme } = useTheme();
@@ -37,12 +37,9 @@ export function Topbar() {
     setMounted(true);
   }, []);
 
-  const handleLogout = () => {
-    AuthService.logout();
-    router.replace("/signin");
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/signin" });
   };
-
-  const currentTheme = resolvedTheme || theme || "light";
 
   return (
     <header className="z-50 w-full border-b bg-background">
@@ -132,7 +129,7 @@ export function Topbar() {
                 <Button
                   variant="outline"
                   className="w-full justify-center h-auto"
-                  onClick={handleLogout}
+                  onClick={handleSignOut}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>

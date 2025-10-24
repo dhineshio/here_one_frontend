@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import AuthService from "@/lib/auth";
+import { useSession } from "next-auth/react";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -10,43 +10,36 @@ interface AuthGuardProps {
 }
 
 export default function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
+  const { status } = useSession();
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!isMounted) return;
+    if (!isMounted || status === "loading") return;
 
-    const checkAuth = () => {
-      const isAuth = AuthService.isAuthenticated();
-      setIsAuthenticated(isAuth);
-      setIsLoading(false);
+    const isAuthenticated = status === "authenticated";
 
-      if (requireAuth && !isAuth) {
-        router.replace('/signin');
+    if (requireAuth && !isAuthenticated) {
+      router.replace('/signin');
+      return;
+    }
+
+    if (!requireAuth && isAuthenticated) {
+      if (window.location.pathname.includes('/signin') || 
+          window.location.pathname.includes('/signup') || 
+          window.location.pathname.includes('/auth')) {
+        router.replace('/dashboard');
         return;
       }
-
-      if (!requireAuth && isAuth) {
-        if (window.location.pathname.includes('/signin') || 
-            window.location.pathname.includes('/signup') || 
-            window.location.pathname.includes('/auth')) {
-          router.replace('/dashboard');
-          return;
-        }
-      }
-    };
-
-    checkAuth();
-  }, [router, requireAuth, isMounted]);
+    }
+  }, [router, requireAuth, isMounted, status]);
 
   // Show loading spinner while checking authentication or mounting
-  if (!isMounted || isLoading) {
+  if (!isMounted || status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
         <div className="flex flex-col items-center space-y-4">
@@ -57,11 +50,11 @@ export default function AuthGuard({ children, requireAuth = true }: AuthGuardPro
     );
   }
 
-  if (requireAuth && !isAuthenticated) {
+  if (requireAuth && status !== "authenticated") {
     return null;
   }
 
-  if (!requireAuth && isAuthenticated) {
+  if (!requireAuth && status === "authenticated") {
     if (typeof window !== 'undefined' && 
         (window.location.pathname.includes('/signin') || 
          window.location.pathname.includes('/signup') || 

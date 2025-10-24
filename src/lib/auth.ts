@@ -53,7 +53,7 @@ export class AuthService {
     try {
       const response = await api.post('/api/auth/register', data);
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       throw error as ApiError;
     }
   }
@@ -66,7 +66,7 @@ export class AuthService {
     try {
       const response = await api.post('/api/auth/signin', data);
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       throw error as ApiError;
     }
   }
@@ -79,7 +79,7 @@ export class AuthService {
     try {
       const response = await api.post('/api/auth/verify-registration', data);
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       throw error as ApiError;
     }
   }
@@ -92,7 +92,7 @@ export class AuthService {
     try {
       const response = await api.post('/api/auth/verify-signin', data);
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       throw error as ApiError;
     }
   }
@@ -105,7 +105,7 @@ export class AuthService {
     try {
       const response = await api.post('/api/auth/request-otp', data);
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       throw error as ApiError;
     }
   }
@@ -117,7 +117,7 @@ export class AuthService {
     try {
       const response = await api.post('/api/auth/request-password-reset', data);
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       throw error as ApiError;
     }
   }
@@ -131,7 +131,7 @@ export class AuthService {
     try {
       const response = await api.post('/api/auth/verify-password-reset', data);
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       throw error as ApiError;
     }
   }
