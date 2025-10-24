@@ -70,7 +70,7 @@ export default function SignIn() {
     <div className="mx-auto flex h-screen w-full">
       {/* Left Side - Login Form */}
       <div className="flex flex-1 items-center justify-center bg-background p-8">
-        <div className="w-sm space-y-8">
+        <div className="w-full md:w-sm space-y-8">
           <div className="flex items-center gap-2">
             <Image
               src="/images/cs_icon.svg"
@@ -195,7 +195,7 @@ export default function SignIn() {
       </div>
 
       {/* Right Side - Primary Background */}
-      <div className="flex flex-1 items-center justify-center bg-primary p-8">
+      <div className="hidden md:flex flex-1 items-center justify-center bg-primary p-8">
         <div className="text-center space-y-6 max-w-md">
           <Image
             src="/images/auth_bg.png"
