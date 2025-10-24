@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useState } from "react";
 import {
   Dialog,
@@ -13,22 +14,56 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Check, Camera, User } from "lucide-react";
 
+const INDUSTRY_CHOICES = [
+  { value: "technology", label: "Technology" },
+  { value: "healthcare", label: "Healthcare" },
+  { value: "finance", label: "Finance" },
+  { value: "retail", label: "Retail" },
+  { value: "education", label: "Education" },
+  { value: "hospitality", label: "Hospitality" },
+  { value: "real_estate", label: "Real Estate" },
+  { value: "entertainment", label: "Entertainment" },
+  { value: "food_beverage", label: "Food & Beverage" },
+  { value: "fashion", label: "Fashion" },
+  { value: "automotive", label: "Automotive" },
+  { value: "manufacturing", label: "Manufacturing" },
+  { value: "consulting", label: "Consulting" },
+  { value: "marketing", label: "Marketing" },
+  { value: "other", label: "Other" },
+];
+
 interface ClientFormData {
   // Basic Information
+  clientName: string;
+  industryType: string;
+  preferredPostTime: string;
   companyName: string;
   industry: string;
   description: string;
 
   // Contact Information
+  contactPersonName: string;
+  contactEmail: string;
+  contactPhone: string;
   email: string;
   phone: string;
   website: string;
   address: string;
 
   // Social Media Accounts
+  facebookProfile: string;
+  instagramProfile: string;
+  youtubeUrl: string;
   facebook: string;
   twitter: string;
   linkedin: string;
@@ -41,17 +76,31 @@ const steps = [
   { id: 3, name: "Social Media Accounts" },
 ];
 
-export default function ClientDialog() {
+interface ClientDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export default function ClientDialog({ open, onOpenChange }: ClientDialogProps = {}) {
   const [currentStep, setCurrentStep] = useState(1);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [formData, setFormData] = useState<ClientFormData>({
+    clientName: "",
+    industryType: "",
+    preferredPostTime: "",
     companyName: "",
     industry: "",
     description: "",
+    contactPersonName: "",
+    contactEmail: "",
+    contactPhone: "",
     email: "",
     phone: "",
     website: "",
     address: "",
+    facebookProfile: "",
+    instagramProfile: "",
+    youtubeUrl: "",
     facebook: "",
     twitter: "",
     linkedin: "",
@@ -62,6 +111,10 @@ export default function ClientDialog() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -92,13 +145,42 @@ export default function ClientDialog() {
     e.preventDefault();
     console.log("Form submitted:", formData);
     // Handle form submission here
+    // Close dialog after submission
+    onOpenChange?.(false);
   };
 
+  // Reset form when dialog closes
+  React.useEffect(() => {
+    if (!open) {
+      setCurrentStep(1);
+      setProfileImage(null);
+      setFormData({
+        clientName: "",
+        industryType: "",
+        preferredPostTime: "",
+        companyName: "",
+        industry: "",
+        description: "",
+        contactPersonName: "",
+        contactEmail: "",
+        contactPhone: "",
+        email: "",
+        phone: "",
+        website: "",
+        address: "",
+        facebookProfile: "",
+        instagramProfile: "",
+        youtubeUrl: "",
+        facebook: "",
+        twitter: "",
+        linkedin: "",
+        instagram: "",
+      });
+    }
+  }, [open]);
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline">Add New Client</Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm md:max-w-2xl lg:max-w-3xl! p-0 bg-background overflow-hidden">
         <div className="bg-background border-b py-4 px-6">
           <DialogTitle className="text-lg font-semibold flex items-center gap-4">
@@ -208,6 +290,90 @@ export default function ClientDialog() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Input Fields */}
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="clientName"
+                          className="text-muted-foreground"
+                        >
+                          Client Name
+                        </Label>
+                        <Input
+                          id="clientName"
+                          name="clientName"
+                          placeholder="Enter client name"
+                          value={formData.clientName}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="industryType"
+                          className="text-muted-foreground"
+                        >
+                          Industry Type
+                        </Label>
+                        <Select
+                          value={formData.industryType}
+                          onValueChange={(value) =>
+                            handleSelectChange("industryType", value)
+                          }
+                        >
+                          <SelectTrigger id="industryType" className="w-full">
+                            <SelectValue placeholder="Select industry type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {INDUSTRY_CHOICES.map((industry) => (
+                              <SelectItem
+                                key={industry.value}
+                                value={industry.value}
+                              >
+                                {industry.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="preferredPostTime"
+                          className="text-muted-foreground"
+                        >
+                          Preferred Post Time
+                        </Label>
+                        <Select
+                          value={formData.preferredPostTime}
+                          onValueChange={(value) =>
+                            handleSelectChange("preferredPostTime", value)
+                          }
+                        >
+                          <SelectTrigger
+                            id="preferredPostTime"
+                            className="w-full"
+                          >
+                            <SelectValue placeholder="Select preferred post time" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="morning">
+                              Morning (6:00 AM - 12:00 PM)
+                            </SelectItem>
+                            <SelectItem value="afternoon">
+                              Afternoon (12:00 PM - 6:00 PM)
+                            </SelectItem>
+                            <SelectItem value="evening">
+                              Evening (6:00 PM - 12:00 AM)
+                            </SelectItem>
+                            <SelectItem value="night">
+                              Night (12:00 AM - 6:00 AM)
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -221,6 +387,46 @@ export default function ClientDialog() {
                       <p className="text-sm text-muted-foreground">
                         Enter the contact details about your client
                       </p>
+                    </div>
+
+                    {/* Contact Fields */}
+                    <div className="space-y-6 mt-8">
+                      <div className="space-y-2">
+                        <Label htmlFor="contactPersonName">
+                          Contact Person Name
+                        </Label>
+                        <Input
+                          id="contactPersonName"
+                          name="contactPersonName"
+                          placeholder="Enter contact person name"
+                          value={formData.contactPersonName}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="contactEmail">Contact Email</Label>
+                        <Input
+                          id="contactEmail"
+                          name="contactEmail"
+                          type="email"
+                          placeholder="Enter contact email"
+                          value={formData.contactEmail}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="contactPhone">Contact Phone</Label>
+                        <Input
+                          id="contactPhone"
+                          name="contactPhone"
+                          type="tel"
+                          placeholder="Enter contact phone"
+                          value={formData.contactPhone}
+                          onChange={handleInputChange}
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
@@ -236,6 +442,49 @@ export default function ClientDialog() {
                         <p className="text-sm text-muted-foreground">
                           Connect your client's social media profiles
                         </p>
+                      </div>
+                    </div>
+
+                    {/* Social Media Fields */}
+                    <div className="space-y-6 mt-8">
+                      <div className="space-y-2">
+                        <Label htmlFor="facebookProfile">
+                          Facebook Profile
+                        </Label>
+                        <Input
+                          id="facebookProfile"
+                          name="facebookProfile"
+                          type="url"
+                          placeholder="Enter Facebook profile URL"
+                          value={formData.facebookProfile}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="instagramProfile">
+                          Instagram Profile
+                        </Label>
+                        <Input
+                          id="instagramProfile"
+                          name="instagramProfile"
+                          type="url"
+                          placeholder="Enter Instagram profile URL"
+                          value={formData.instagramProfile}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="youtubeUrl">YouTube URL</Label>
+                        <Input
+                          id="youtubeUrl"
+                          name="youtubeUrl"
+                          type="url"
+                          placeholder="Enter YouTube channel URL"
+                          value={formData.youtubeUrl}
+                          onChange={handleInputChange}
+                        />
                       </div>
                     </div>
                   </div>

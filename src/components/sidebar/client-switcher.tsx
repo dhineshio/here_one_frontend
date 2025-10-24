@@ -18,6 +18,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import ClientDialog from "@/components/client_dialog";
 
 export function ClientSwitcher({
   clients,
@@ -30,66 +31,73 @@ export function ClientSwitcher({
 }) {
   const { isMobile } = useSidebar();
   const [activeClient, setActiveClient] = React.useState(clients[0]);
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   if (!activeClient) {
     return null;
   }
 
   return (
-    <SidebarMenu className="bg-accent rounded-lg mb-2">
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:!h-12 group-data-[collapsible=icon]:!w-12 group-data-[collapsible=icon]:!p-3"
-            >
-              <div className="bg-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                <activeClient.logo className="size-4" />
-              </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">
-                  {activeClient.name}
-                </span>
-                <span className="truncate text-xs">{activeClient.plan}</span>
-              </div>
-              <ChevronsUpDown className="ml-auto" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            align="start"
-            side={isMobile ? "bottom" : "right"}
-            sideOffset={4}
-          >
-            <DropdownMenuLabel className="text-muted-foreground text-xs">
-              Clients
-            </DropdownMenuLabel>
-            {clients.map((client, index) => (
-              <DropdownMenuItem
-                key={client.name}
-                onClick={() => setActiveClient(client)}
-                className="gap-2 p-2"
+    <>
+      <ClientDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
+      <SidebarMenu className="bg-accent rounded-lg mb-2">
+        <SidebarMenuItem>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <SidebarMenuButton
+                size="lg"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:!h-12 group-data-[collapsible=icon]:!w-12 group-data-[collapsible=icon]:!p-3"
               >
-                <div className="flex size-6 items-center justify-center rounded-md border">
-                  <client.logo className="size-3.5 shrink-0" />
+                <div className="bg-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                  <activeClient.logo className="size-4" />
                 </div>
-                {client.name}
-                <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">
+                    {activeClient.name}
+                  </span>
+                  <span className="truncate text-xs">{activeClient.plan}</span>
+                </div>
+                <ChevronsUpDown className="ml-auto" />
+              </SidebarMenuButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+              align="start"
+              side={isMobile ? "bottom" : "right"}
+              sideOffset={4}
+            >
+              <DropdownMenuLabel className="text-muted-foreground text-xs">
+                Clients
+              </DropdownMenuLabel>
+              {clients.map((client, index) => (
+                <DropdownMenuItem
+                  key={client.name}
+                  onClick={() => setActiveClient(client)}
+                  className="gap-2 p-2"
+                >
+                  <div className="flex size-6 items-center justify-center rounded-md border">
+                    <client.logo className="size-3.5 shrink-0" />
+                  </div>
+                  {client.name}
+                  <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="gap-2 p-2"
+                onClick={() => setIsDialogOpen(true)}
+              >
+                <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                  <Plus className="size-4" />
+                </div>
+                <div className="text-muted-foreground font-medium">
+                  Add Client
+                </div>
               </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                <Plus className="size-4" />
-              </div>
-              <div className="text-muted-foreground font-medium">
-                Add Client
-              </div>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
-    </SidebarMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </>
   );
 }
