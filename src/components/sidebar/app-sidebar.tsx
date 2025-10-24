@@ -30,14 +30,13 @@ import { IconCreditCard, IconHelp } from "@tabler/icons-react";
 import { NavSecondary } from "./nav-secondary";
 import { ClientSwitcher } from "./client-switcher";
 
-// This is sample data.
+// Navigation data - active states are now automatically determined based on current pathname
 const data = {
   navMain: [
     {
       title: "Home",
       url: "/dashboard",
       icon: Home,
-      isActive: true,
       items: [],
     },
     {
@@ -76,7 +75,7 @@ const data = {
         },
         {
           title: "Caption Generator",
-          url: "#",
+          url: "/content-gen",
         },
       ],
     },

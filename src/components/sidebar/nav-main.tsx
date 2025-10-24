@@ -16,7 +16,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export function NavMain({
   items,
@@ -25,7 +25,6 @@ export function NavMain({
     title: string;
     url: string;
     icon?: LucideIcon;
-    isActive?: boolean;
     items?: {
       title: string;
       url: string;
@@ -33,15 +32,29 @@ export function NavMain({
   }[];
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+
+  const isUrlActive = (url: string) => {
+    if (url === "#") return false;
+    return pathname === url || pathname.startsWith(url + "/");
+  };
+
   return (
     <SidebarGroup>
       <SidebarMenu>
-        {items.map((item) =>
-          item.items?.length !== 0 ? (
+        {items.map((item) => {
+          const hasActiveSubItem = item.items?.some((subItem) =>
+            isUrlActive(subItem.url)
+          );
+          
+          const isParentActive = isUrlActive(item.url) && !hasActiveSubItem;
+          const shouldExpand = isParentActive || hasActiveSubItem;
+
+          return item.items?.length !== 0 ? (
             <Collapsible
               key={item.title}
               asChild
-              defaultOpen={item.isActive}
+              defaultOpen={shouldExpand}
               className="group/collapsible"
             >
               <SidebarMenuItem>
@@ -50,7 +63,7 @@ export function NavMain({
                     tooltip={item.title}
                     size="lg"
                     className="space-x-4 group-data-[collapsible=icon]:!h-12 group-data-[collapsible=icon]:!w-12 group-data-[collapsible=icon]:!p-3.5"
-                    isActive={item.isActive}
+                    isActive={isParentActive}
                   >
                     {item.icon && <item.icon className="h-5! w-5!" />}
                     {item.title}
@@ -63,10 +76,13 @@ export function NavMain({
                   <SidebarMenuSub>
                     {item.items?.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton asChild className="h-10">
-                          <a href={subItem.url}>
-                            <span>{subItem.title}</span>
-                          </a>
+                        <SidebarMenuSubButton
+                          asChild
+                          className="h-10"
+                          isActive={isUrlActive(subItem.url)}
+                          onClick={() => router.push(subItem.url)}
+                        >
+                          <span>{subItem.title}</span>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     ))}
@@ -80,15 +96,15 @@ export function NavMain({
               tooltip={item.title}
               size="lg"
               className="space-x-4 group-data-[collapsible=icon]:!h-12 group-data-[collapsible=icon]:!w-12 group-data-[collapsible=icon]:!p-3.5"
-              isActive={item.isActive}
+              isActive={isParentActive}
               onClick={() => router.push(item.url)}
             >
               {item.icon && <item.icon className="h-5! w-5!" />}
               {item.title}
               <ChevronRight className={`hidden`} />
             </SidebarMenuButton>
-          )
-        )}
+          );
+        })}
       </SidebarMenu>
     </SidebarGroup>
   );

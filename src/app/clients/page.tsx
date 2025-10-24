@@ -46,7 +46,7 @@ export default function Clients() {
   return (
     <AppLayout>
       <AuthGuard requireAuth={true}>
-        <div className="min-h-screen text-black dark:text-white">
+        <div className="min-h-screen text-black dark:text-white p-4 md:p-6 lg:p-8">
           {/* Header with Search and Add Client button */}
           <div className="flex flex-col gap-4 mb-6 md:flex-row md:justify-between md:items-center">
             <h1 className="text-xl md:text-2xl font-bold text-black dark:text-white">
