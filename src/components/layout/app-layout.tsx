@@ -11,7 +11,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <Topbar />
       </div>
       <AppSidebar className="mt-18 relative h-[calc(100vh-72px)]" />
-      <SidebarInset className="mt-18 relative h-[calc(100vh-72px)] bg-accent/20">
+      <SidebarInset className="mt-18 relative h-[calc(100vh-72px)] bg-accent/20 overflow-y-hidden">
         {children}
       </SidebarInset>
     </SidebarProvider>

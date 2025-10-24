@@ -207,6 +207,24 @@ export default function ProgressUpload({
     (f) => f.status === "uploading"
   ).length;
 
+  // Generate upload description based on accept prop
+  const getUploadDescription = () => {
+    if (accept === "video/*,audio/*,image/*") {
+      return {
+        title: "Upload your media files",
+        description: "Drag and drop videos, audio files, or images here or click to browse",
+        supportText: `Supports video, audio, and image files up to ${formatBytes(maxSize)} each`
+      };
+    }
+    return {
+      title: "Upload your files",
+      description: "Drag and drop files here or click to browse",
+      supportText: `Support for multiple file types up to ${formatBytes(maxSize)} each`
+    };
+  };
+
+  const uploadText = getUploadDescription();
+
   return (
     <div className={cn("w-full max-w-2xl", className)}>
       {/* Upload Area */}
@@ -240,12 +258,12 @@ export default function ProgressUpload({
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Upload your files</h3>
+            <h3 className="text-lg font-semibold">{uploadText.title}</h3>
             <p className="text-sm text-muted-foreground">
-              Drag and drop files here or click to browse
+              {uploadText.description}
             </p>
             <p className="text-xs text-muted-foreground">
-              Support for multiple file types up to {formatBytes(maxSize)} each
+              {uploadText.supportText}
             </p>
           </div>
 
