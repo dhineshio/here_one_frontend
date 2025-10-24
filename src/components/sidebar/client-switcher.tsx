@@ -49,10 +49,7 @@ export function ClientSwitcher() {
         <ClientDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
         <SidebarMenu className="bg-accent rounded-lg mb-2">
           <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              onClick={() => setIsDialogOpen(true)}
-            >
+            <SidebarMenuButton size="lg" onClick={() => setIsDialogOpen(true)}>
               <div className="bg-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                 <Plus className="size-4" />
               </div>
@@ -79,8 +76,8 @@ export function ClientSwitcher() {
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:!h-12 group-data-[collapsible=icon]:!w-12 group-data-[collapsible=icon]:!p-3"
               >
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage 
-                    src={activeClient.brand_logo || ""} 
+                  <AvatarImage
+                    src={activeClient.brand_logo || ""}
                     alt={activeClient.client_name}
                   />
                   <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">
@@ -93,10 +90,12 @@ export function ClientSwitcher() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">
+                  <span className="truncate font-medium capitalize">
                     {activeClient.client_name}
                   </span>
-                  <span className="truncate text-xs">{activeClient.industry_type}</span>
+                  <span className="truncate text-xs capitalize">
+                    {activeClient.industry_type}
+                  </span>
                 </div>
                 <ChevronsUpDown className="ml-auto" />
               </SidebarMenuButton>
@@ -117,8 +116,8 @@ export function ClientSwitcher() {
                   className="gap-2 p-2"
                 >
                   <Avatar className="h-6 w-6 rounded-md">
-                    <AvatarImage 
-                      src={client.brand_logo || ""} 
+                    <AvatarImage
+                      src={client.brand_logo || ""}
                       alt={client.client_name}
                     />
                     <AvatarFallback className="rounded-md text-xs">

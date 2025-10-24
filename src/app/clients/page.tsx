@@ -21,7 +21,12 @@ import { useClients } from "@/contexts/client-context";
 
 export default function Clients() {
   const { isLoading } = useAuth();
-  const { clients, isLoading: isLoadingClients, error, refreshClients } = useClients();
+  const {
+    clients,
+    isLoading: isLoadingClients,
+    error,
+    refreshClients,
+  } = useClients();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -135,10 +140,10 @@ export default function Clients() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold text-black dark:text-white truncate">
+                          <h3 className="font-semibold text-black dark:text-white truncate capitalize">
                             {client.client_name}
                           </h3>
-                          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
+                          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate ">
                             {client.contact_email}
                           </p>
                         </div>

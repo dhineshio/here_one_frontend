@@ -69,7 +69,16 @@ const data = {
       title: "Transcribe",
       url: "#",
       icon: Bot,
-      items: [],
+      items: [
+        {
+          title: "SRT Generator",
+          url: "#",
+        },
+        {
+          title: "Caption Generator",
+          url: "#",
+        },
+      ],
     },
     {
       title: "Templates",
