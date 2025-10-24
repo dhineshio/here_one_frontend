@@ -32,23 +32,6 @@ import { ClientSwitcher } from "./client-switcher";
 
 // This is sample data.
 const data = {
-  clients: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
       title: "Home",
@@ -139,7 +122,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         />
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border ">
-        <ClientSwitcher clients={data.clients} />
+        <ClientSwitcher />
         <p className="text-xs text-muted-foreground text-center group-data-[collapsible=icon]:hidden">
           CreatorScribe &copy; {new Date().getFullYear()}
         </p>

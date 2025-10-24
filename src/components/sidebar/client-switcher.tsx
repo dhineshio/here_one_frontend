@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronsUpDown, Plus } from "lucide-react";
+import { ChevronsUpDown, Plus, Building2 } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -19,22 +19,52 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import ClientDialog from "@/components/client_dialog";
+import { useClients } from "@/contexts/client-context";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export function ClientSwitcher({
-  clients,
-}: {
-  clients: {
-    name: string;
-    logo: React.ElementType;
-    plan: string;
-  }[];
-}) {
+export function ClientSwitcher() {
   const { isMobile } = useSidebar();
-  const [activeClient, setActiveClient] = React.useState(clients[0]);
+  const { clients, activeClient, setActiveClient, isLoading } = useClients();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
-  if (!activeClient) {
-    return null;
+  if (isLoading) {
+    return (
+      <SidebarMenu className="bg-accent rounded-lg mb-2">
+        <SidebarMenuItem>
+          <SidebarMenuButton size="lg" disabled>
+            <div className="bg-muted animate-pulse flex aspect-square size-8 items-center justify-center rounded-lg" />
+            <div className="grid flex-1 text-left text-sm leading-tight gap-1">
+              <div className="h-4 bg-muted animate-pulse rounded w-24" />
+              <div className="h-3 bg-muted animate-pulse rounded w-16" />
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    );
+  }
+
+  if (!activeClient || clients.length === 0) {
+    return (
+      <>
+        <ClientDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
+        <SidebarMenu className="bg-accent rounded-lg mb-2">
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              size="lg"
+              onClick={() => setIsDialogOpen(true)}
+            >
+              <div className="bg-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                <Plus className="size-4" />
+              </div>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-medium">Add Client</span>
+                <span className="truncate text-xs">Get started</span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </>
+    );
   }
 
   return (
@@ -48,14 +78,25 @@ export function ClientSwitcher({
                 size="lg"
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:!h-12 group-data-[collapsible=icon]:!w-12 group-data-[collapsible=icon]:!p-3"
               >
-                <div className="bg-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <activeClient.logo className="size-4" />
-                </div>
+                <Avatar className="h-8 w-8 rounded-lg">
+                  <AvatarImage 
+                    src={activeClient.brand_logo || ""} 
+                    alt={activeClient.client_name}
+                  />
+                  <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">
+                    {activeClient.client_name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">
-                    {activeClient.name}
+                    {activeClient.client_name}
                   </span>
-                  <span className="truncate text-xs">{activeClient.plan}</span>
+                  <span className="truncate text-xs">{activeClient.industry_type}</span>
                 </div>
                 <ChevronsUpDown className="ml-auto" />
               </SidebarMenuButton>
@@ -71,14 +112,25 @@ export function ClientSwitcher({
               </DropdownMenuLabel>
               {clients.map((client, index) => (
                 <DropdownMenuItem
-                  key={client.name}
+                  key={client.id}
                   onClick={() => setActiveClient(client)}
                   className="gap-2 p-2"
                 >
-                  <div className="flex size-6 items-center justify-center rounded-md border">
-                    <client.logo className="size-3.5 shrink-0" />
-                  </div>
-                  {client.name}
+                  <Avatar className="h-6 w-6 rounded-md">
+                    <AvatarImage 
+                      src={client.brand_logo || ""} 
+                      alt={client.client_name}
+                    />
+                    <AvatarFallback className="rounded-md text-xs">
+                      {client.client_name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()
+                        .slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {client.client_name}
                   <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
                 </DropdownMenuItem>
               ))}
