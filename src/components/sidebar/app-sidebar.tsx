@@ -15,7 +15,7 @@ import {
   Settings,
 } from "lucide-react";
 
-import { NavMain } from "@/components/nav-main";
+import { NavMain } from "@/components/sidebar/nav-main";
 
 import {
   Sidebar,
@@ -25,10 +25,10 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Button } from "./ui/button";
-import { ClientSwitcher } from "./client-switcher";
+import { Button } from "../ui/button";
 import { IconCreditCard, IconHelp } from "@tabler/icons-react";
 import { NavSecondary } from "./nav-secondary";
+import { ClientSwitcher } from "./client-switcher";
 
 // This is sample data.
 const data = {
@@ -125,7 +125,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           variant="outline"
           onClick={() => setOpen(!open)}
           size="icon"
-          className="w-8! h-8! absolute top-7 -right-4 z-50 rounded-full bg-background!"
+          className="w-8! h-8! absolute top-8 -right-4 z-50 rounded-full bg-background!"
         >
           {open ? <ChevronLeft /> : <ChevronRight />}
         </Button>

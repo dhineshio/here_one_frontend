@@ -56,23 +56,15 @@ export default function SignUp() {
     setError("");
 
     try {
-      // For email/password signup, you can call your existing backend API
-      // and then sign in with NextAuth
-      const [firstName, ...lastNameParts] = fullName.split(" ");
-      const lastName = lastNameParts.join(" ");
-
-      // Import your AuthService
       const AuthService = (await import("@/lib/auth")).default;
       
       await AuthService.register({
-        first_name: firstName,
-        last_name: lastName || firstName,
+        full_name: fullName,
         email,
         password,
-        user_type: "freelancer", // or get this from a form field
+        phone_number: "",
       });
 
-      // After successful registration, redirect to verify-otp page
       router.push(`/verify-otp?email=${encodeURIComponent(email)}&type=registration`);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An error occurred during sign up";

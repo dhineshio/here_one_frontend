@@ -26,10 +26,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        accessToken: { label: "Access Token", type: "text" },
+        refreshToken: { label: "Refresh Token", type: "text" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required");
+        if (!credentials?.email) {
+          throw new Error("Email is required");
+        }
+
+        // If tokens are provided (from OTP verification), use them
+        if (credentials.accessToken && credentials.refreshToken) {
+          return {
+            id: credentials.email as string,
+            email: credentials.email as string,
+            name: credentials.email as string,
+            accessToken: credentials.accessToken as string,
+            refreshToken: credentials.refreshToken as string,
+          };
+        }
+
+        // This shouldn't be reached in the new flow, but kept for backwards compatibility
+        if (!credentials?.password) {
+          throw new Error("Password is required");
         }
 
         try {
@@ -65,11 +83,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Handle OAuth sign-in (Google/Facebook)
       if (account?.provider === "google" || account?.provider === "facebook") {
         try {
+          // Create a fresh axios instance to avoid session interceptor issues
+          const axios = (await import('axios')).default;
+          const backendApi = axios.create({
+            baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+            timeout: 10000,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
           // Send OAuth data to your backend for processing
-          const response = await api.post("/api/auth/oauth-signin", {
+          const response = await backendApi.post("/api/auth/oauth-signin", {
             provider: account.provider,
             email: user.email,
-            name: user.name,
+            full_name: user.name,
             image: user.image,
             oauth_id: account.providerAccountId,
             access_token: account.access_token,
@@ -83,9 +111,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             }
             return true;
           }
+          
           return false;
         } catch (error) {
-          console.error("OAuth sign-in error:", error);
+          if (error instanceof Error) {
+            console.error("Error message:", error.message);
+          }
+          // Log the full error response if available
+          const axiosError = error as any;
+          if (axiosError?.response) {
+            console.error("Backend error response:", axiosError.response.data);
+            console.error("Backend error status:", axiosError.response.status);
+          }
           return false;
         }
       }

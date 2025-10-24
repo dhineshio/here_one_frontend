@@ -48,20 +48,20 @@ export default function SignIn() {
     setError("");
 
     try {
-      const result = await signIn("credentials", {
+      // Import AuthService
+      const AuthService = (await import("@/lib/auth")).default;
+      
+      // Call backend API to initiate sign-in (sends OTP)
+      await AuthService.signIn({
         email,
         password,
-        redirect: false,
       });
 
-      if (result?.error) {
-        setError(result.error);
-        setIsLoading(false);
-      } else if (result?.ok) {
-        router.push("/dashboard");
-      }
-    } catch (error) {
-      setError("An error occurred during sign in");
+      // Redirect to verify-otp page with email and type
+      router.push(`/verify-otp?email=${encodeURIComponent(email)}&type=signin`);
+    } catch (err) {
+      const errorMessage = (err as Error)?.message || "An error occurred during sign in";
+      setError(errorMessage);
       setIsLoading(false);
     }
   };

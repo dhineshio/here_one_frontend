@@ -33,7 +33,7 @@ export function NavMain({
 }) {
   return (
     <SidebarGroup>
-      <SidebarMenu>
+      <SidebarMenu >
         {items.map((item) =>
           item.items?.length !== 0 ? (
             <Collapsible
@@ -47,7 +47,7 @@ export function NavMain({
                   <SidebarMenuButton
                     tooltip={item.title}
                     size="lg"
-                    className="space-x-4 group-data-[collapsible=icon]:!h-12 group-data-[collapsible=icon]:!w-12 group-data-[collapsible=icon]:!p-3"
+                    className="space-x-4 group-data-[collapsible=icon]:!h-12 group-data-[collapsible=icon]:!w-12 group-data-[collapsible=icon]:!p-3.5"
                     isActive={item.isActive}
                   >
                     {item.icon && <item.icon className="h-5! w-5!" />}
@@ -77,7 +77,7 @@ export function NavMain({
               key={item.title}
               tooltip={item.title}
               size="lg"
-              className="space-x-4 group-data-[collapsible=icon]:!h-12 group-data-[collapsible=icon]:!w-12 group-data-[collapsible=icon]:!p-3"
+              className="space-x-4 group-data-[collapsible=icon]:!h-12 group-data-[collapsible=icon]:!w-12 group-data-[collapsible=icon]:!p-3.5"
               isActive={item.isActive}
             >
               {item.icon && <item.icon className="h-5! w-5!" />}

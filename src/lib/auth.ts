@@ -42,13 +42,10 @@ export interface ApiError {
 export class AuthService {
   // Register user
   static async register(data: {
-    first_name: string;
-    last_name: string;
+    full_name: string;
     email: string;
     password: string;
     phone_number?: string;
-    user_type: 'freelancer' | 'startup';
-    team_members_count?: number;
   }): Promise<RegisterResponse> {
     try {
       const response = await api.post('/api/auth/register', data);

@@ -17,7 +17,7 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <AuthGuard requireAuth={false}>
+      <AuthGuard requireAuth={true}>
         <div className="min-h-screen text-black dark:text-white">
           <h1 className="text-2xl font-bold text-black dark:text-white">
             Home
