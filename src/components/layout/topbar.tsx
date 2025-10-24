@@ -27,7 +27,6 @@ import Image from "next/image";
 import { signOut } from "next-auth/react";
 
 export function Topbar() {
-  const { theme, resolvedTheme } = useTheme();
   const router = useRouter();
   const [mounted, setMounted] = React.useState(false);
   const { isMobile } = useSidebar();
@@ -105,9 +104,9 @@ export function Topbar() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="my-2" />
-              <DropdownMenuItem className="px-3 py-3">
+              <DropdownMenuItem className="px-3 py-3" onClick={() => router.push("/clients")}>
                 <UserCog className="mr-3 h-4 w-4" />
-                <span>Account Settings</span>
+                <span>Client</span>
               </DropdownMenuItem>
               <DropdownMenuItem className="px-3 py-3">
                 <Bell className="mr-3 h-4 w-4" />

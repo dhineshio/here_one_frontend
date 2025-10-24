@@ -118,7 +118,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             console.error("Error message:", error.message);
           }
           // Log the full error response if available
-          const axiosError = error as any;
+          const axiosError = error as { response?: { data: unknown; status: number } };
           if (axiosError?.response) {
             console.error("Backend error response:", axiosError.response.data);
             console.error("Backend error status:", axiosError.response.status);

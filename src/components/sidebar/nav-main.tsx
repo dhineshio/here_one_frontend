@@ -16,6 +16,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { useRouter } from "next/navigation";
 
 export function NavMain({
   items,
@@ -31,9 +32,10 @@ export function NavMain({
     }[];
   }[];
 }) {
+  const router = useRouter();
   return (
     <SidebarGroup>
-      <SidebarMenu >
+      <SidebarMenu>
         {items.map((item) =>
           item.items?.length !== 0 ? (
             <Collapsible
@@ -79,6 +81,7 @@ export function NavMain({
               size="lg"
               className="space-x-4 group-data-[collapsible=icon]:!h-12 group-data-[collapsible=icon]:!w-12 group-data-[collapsible=icon]:!p-3.5"
               isActive={item.isActive}
+              onClick={() => router.push(item.url)}
             >
               {item.icon && <item.icon className="h-5! w-5!" />}
               {item.title}
