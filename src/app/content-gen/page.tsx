@@ -26,7 +26,6 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { History, ChevronDown, Sparkles } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function ContentGen() {
@@ -197,7 +196,7 @@ export default function ContentGen() {
           {/* Desktop (lg+): Sidebar with shrink effect */}
           <div className="hidden lg:block relative">
             <div
-              className={`h-[calc(100vh-72px)] bg-accent/20 transition-all duration-300 ease-in-out overflow-hidden ${
+              className={`h-[calc(100vh-72px)] bg-accent/40 transition-all duration-300 ease-in-out overflow-hidden ${
                 isHistoryOpen ? "w-[19rem]" : "w-0"
               }`}
             >

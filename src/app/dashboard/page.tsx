@@ -20,9 +20,7 @@ export default function Dashboard() {
     <AppLayout>
       <AuthGuard requireAuth={true}>
         <div className="min-h-screen text-black dark:text-white">
-          <h1 className="text-2xl font-bold text-black dark:text-white">
-            <ProgressUpload />
-          </h1>
+        
         </div>
       </AuthGuard>
     </AppLayout>

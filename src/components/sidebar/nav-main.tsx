@@ -46,7 +46,7 @@ export function NavMain({
           const hasActiveSubItem = item.items?.some((subItem) =>
             isUrlActive(subItem.url)
           );
-          
+
           const isParentActive = isUrlActive(item.url) && !hasActiveSubItem;
           const shouldExpand = isParentActive || hasActiveSubItem;
 
@@ -82,7 +82,7 @@ export function NavMain({
                           isActive={isUrlActive(subItem.url)}
                           onClick={() => router.push(subItem.url)}
                         >
-                          <span>{subItem.title}</span>
+                          <span className="select-none">{subItem.title}</span>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     ))}
