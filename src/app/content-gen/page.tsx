@@ -19,7 +19,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 import {
   Collapsible,
   CollapsibleContent,
@@ -32,8 +34,9 @@ export default function ContentGen() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [audioLanguage, setAudioLanguage] = useState<string>("");
-  const [recognizeSpeakers, setRecognizeSpeakers] = useState(false);
-  const [transcribeToEnglish, setTranscribeToEnglish] = useState(false);
+  const [captionLength, setCaptionLength] = useState<string>("medium");
+  const [descriptionLength, setDescriptionLength] = useState<string>("medium");
+  const [hashtagCount, setHashtagCount] = useState<number>(15);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Detect screen size and set initial state
@@ -122,7 +125,7 @@ export default function ContentGen() {
                         variant="ghost"
                         className="w-full flex items-center justify-between"
                       >
-                        <span>Speaker Recognition & More Settings</span>
+                        <span>Content Settings</span>
                         <ChevronDown
                           className={`h-4 w-4 transition-transform duration-200 ${
                             isSettingsOpen ? "rotate-180" : ""
@@ -130,35 +133,137 @@ export default function ContentGen() {
                         />
                       </Button>
                     </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-4 space-y-4 border rounded-lg p-4">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          checked={recognizeSpeakers}
-                          onCheckedChange={(checked) =>
-                            setRecognizeSpeakers(checked as boolean)
-                          }
-                        />
-                        <Label
-                          htmlFor="recognize-speakers"
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    <CollapsibleContent className="mt-4 space-y-6 border rounded-lg p-6">
+                      {/* Caption Length */}
+                      <div className="space-y-3">
+                        <Label className="text-sm font-semibold">Caption Length</Label>
+                        <RadioGroup
+                          value={captionLength}
+                          onValueChange={setCaptionLength}
+                          className="grid grid-cols-3 gap-3"
                         >
-                          Recognize Speakers
-                        </Label>
+                          <div>
+                            <RadioGroupItem
+                              value="short"
+                              id="caption-short"
+                              className="peer sr-only"
+                            />
+                            <Label
+                              htmlFor="caption-short"
+                              className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all"
+                            >
+                              <span className="text-sm font-semibold">Short</span>
+                            </Label>
+                          </div>
+                          <div>
+                            <RadioGroupItem
+                              value="medium"
+                              id="caption-medium"
+                              className="peer sr-only"
+                            />
+                            <Label
+                              htmlFor="caption-medium"
+                              className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all"
+                            >
+                              <span className="text-sm font-semibold">Medium</span>
+                            </Label>
+                          </div>
+                          <div>
+                            <RadioGroupItem
+                              value="long"
+                              id="caption-long"
+                              className="peer sr-only"
+                            />
+                            <Label
+                              htmlFor="caption-long"
+                              className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all"
+                            >
+                              <span className="text-sm font-semibold">Long</span>
+                            </Label>
+                          </div>
+                        </RadioGroup>
                       </div>
 
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          checked={transcribeToEnglish}
-                          onCheckedChange={(checked) =>
-                            setTranscribeToEnglish(checked as boolean)
-                          }
-                        />
-                        <Label
-                          htmlFor="transcribe-english"
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      {/* Description Length */}
+                      <div className="space-y-3">
+                        <Label className="text-sm font-semibold">Description Length</Label>
+                        <RadioGroup
+                          value={descriptionLength}
+                          onValueChange={setDescriptionLength}
+                          className="grid grid-cols-3 gap-3"
                         >
-                          Transcribe to English
-                        </Label>
+                          <div>
+                            <RadioGroupItem
+                              value="short"
+                              id="description-short"
+                              className="peer sr-only"
+                            />
+                            <Label
+                              htmlFor="description-short"
+                              className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all"
+                            >
+                              <span className="text-sm font-semibold">Short</span>
+                            </Label>
+                          </div>
+                          <div>
+                            <RadioGroupItem
+                              value="medium"
+                              id="description-medium"
+                              className="peer sr-only"
+                            />
+                            <Label
+                              htmlFor="description-medium"
+                              className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all"
+                            >
+                              <span className="text-sm font-semibold">Medium</span>
+                            </Label>
+                          </div>
+                          <div>
+                            <RadioGroupItem
+                              value="long"
+                              id="description-long"
+                              className="peer sr-only"
+                            />
+                            <Label
+                              htmlFor="description-long"
+                              className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all"
+                            >
+                              <span className="text-sm font-semibold">Long</span>
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+
+                      {/* Hashtag Count */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm font-semibold">Hashtag Count</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            max="30"
+                            value={hashtagCount}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value);
+                              if (!isNaN(value) && value >= 1 && value <= 30) {
+                                setHashtagCount(value);
+                              }
+                            }}
+                            className="w-20 text-center"
+                          />
+                        </div>
+                        <Slider
+                          value={[hashtagCount]}
+                          onValueChange={(value) => setHashtagCount(value[0])}
+                          min={1}
+                          max={30}
+                          step={1}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>1</span>
+                          <span>30</span>
+                        </div>
                       </div>
                     </CollapsibleContent>
                   </Collapsible>
