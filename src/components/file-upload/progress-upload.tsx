@@ -30,13 +30,14 @@ import {
   VideoIcon,
   XIcon,
 } from "lucide-react";
-import { toAbsoluteUrl } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
+import { TranscribeService } from "@/lib/api-services";
 
 interface FileUploadItem extends FileWithPreview {
   progress: number;
   status: "uploading" | "completed" | "error";
   error?: string;
+  jobId?: string;
 }
 
 interface ProgressUploadProps {
@@ -45,7 +46,9 @@ interface ProgressUploadProps {
   accept?: string;
   multiple?: boolean;
   className?: string;
+  clientId?: number | null;
   onFilesChange?: (files: FileWithPreview[]) => void;
+  onUploadComplete?: (jobId: string, file: FileWithPreview) => void;
   simulateUpload?: boolean;
 }
 
@@ -55,8 +58,10 @@ export default function ProgressUpload({
   accept = "*",
   multiple = false,
   className,
+  clientId,
   onFilesChange,
-  simulateUpload = true,
+  onUploadComplete,
+  simulateUpload = false,
 }: ProgressUploadProps) {
   // Create default images using FileMetadata type
   const defaultImages: FileMetadata[] = [];
@@ -76,6 +81,84 @@ export default function ProgressUpload({
 
   const [uploadFiles, setUploadFiles] =
     useState<FileUploadItem[]>(defaultUploadFiles);
+
+  // Function to upload a file to the real API
+  const uploadFileToAPI = async (fileItem: FileUploadItem) => {
+    if (!clientId) {
+      setUploadFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileItem.id
+            ? {
+                ...f,
+                status: "error" as const,
+                error: "Please select a client/brand first",
+              }
+            : f
+        )
+      );
+      return;
+    }
+
+    // Only upload actual File objects, not FileMetadata
+    if (!(fileItem.file instanceof File)) {
+      setUploadFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileItem.id
+            ? {
+                ...f,
+                status: "error" as const,
+                error: "Cannot upload file metadata",
+              }
+            : f
+        )
+      );
+      return;
+    }
+
+    try {
+      const response = await TranscribeService.uploadFile(
+        clientId,
+        fileItem.file,
+        (progress) => {
+          setUploadFiles((prev) =>
+            prev.map((f) =>
+              f.id === fileItem.id ? { ...f, progress } : f
+            )
+          );
+        }
+      );
+
+      // Update file status to completed
+      setUploadFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileItem.id
+            ? {
+                ...f,
+                progress: 100,
+                status: "completed" as const,
+                jobId: response.job_id,
+              }
+            : f
+        )
+      );
+
+      // Call onUploadComplete callback
+      onUploadComplete?.(response.job_id, fileItem);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Upload failed. Please try again.";
+      setUploadFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileItem.id
+            ? {
+                ...f,
+                status: "error" as const,
+                error: errorMessage,
+              }
+            : f
+        )
+      );
+    }
+  };
 
   const [
     { isDragging, errors },
@@ -120,6 +203,16 @@ export default function ProgressUpload({
       });
       setUploadFiles(newUploadFiles);
       onFilesChange?.(newFiles);
+
+      // Start upload for new files if not simulating
+      if (!simulateUpload) {
+        newUploadFiles.forEach((fileItem) => {
+          const isNewFile = !uploadFiles.find((f) => f.id === fileItem.id);
+          if (isNewFile && fileItem.status === "uploading") {
+            uploadFileToAPI(fileItem);
+          }
+        });
+      }
     },
   });
 
@@ -177,6 +270,14 @@ export default function ProgressUpload({
           : file
       )
     );
+
+    // Find the file and upload it again if not simulating
+    if (!simulateUpload) {
+      const fileToRetry = uploadFiles.find((f) => f.id === fileId);
+      if (fileToRetry) {
+        uploadFileToAPI({ ...fileToRetry, progress: 0, status: "uploading", error: undefined });
+      }
+    }
   };
 
   const removeUploadFile = (fileId: string) => {

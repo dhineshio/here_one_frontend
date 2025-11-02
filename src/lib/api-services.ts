@@ -32,6 +32,19 @@ export interface ApiError {
   message: string;
 }
 
+// Types for Transcribe/Upload API
+export interface UploadFileResponse {
+  success?: boolean;
+  message: string;
+  job_id: string;
+  client_id: number;
+  client_name: string;
+  file_type: 'audio' | 'video' | 'image';
+  original_filename: string;
+  status: string;
+  note?: string;
+}
+
 // Client service
 export class ClientService {
   // Get all clients
@@ -39,10 +52,51 @@ export class ClientService {
     try {
       const response = await api.get('/api/clients/my-clients');
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch clients';
       throw {
         success: false,
-        message: error.message || 'Failed to fetch clients',
+        message: errorMessage,
+      } as ApiError;
+    }
+  }
+}
+
+// Transcribe service
+export class TranscribeService {
+  // Upload file for transcription
+  static async uploadFile(
+    clientId: number,
+    file: File,
+    onProgress?: (progress: number) => void
+  ): Promise<UploadFileResponse> {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await api.post(
+        `/api/transcribe/upload-file?client_id=${clientId}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const progress = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              onProgress?.(progress);
+            }
+          },
+        }
+      );
+      return response.data;
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to upload file';
+      throw {
+        success: false,
+        message: errorMessage,
       } as ApiError;
     }
   }

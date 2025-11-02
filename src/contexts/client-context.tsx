@@ -41,8 +41,9 @@ export function ClientProvider({ children }: { children: React.ReactNode }) {
       } else {
         setError(response.message);
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to load clients");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to load clients";
+      setError(errorMessage);
       console.error("Error fetching clients:", err);
     } finally {
       setIsLoading(false);

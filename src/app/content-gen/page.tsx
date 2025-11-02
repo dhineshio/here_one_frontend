@@ -29,8 +29,11 @@ import {
 } from "@/components/ui/collapsible";
 import { History, ChevronDown, Sparkles } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useClients } from "@/contexts/client-context";
+import type { FileWithPreview } from "@/hooks/use-file-upload";
 
 export default function ContentGen() {
+  const { activeClient } = useClients();
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [audioLanguage, setAudioLanguage] = useState<string>("");
@@ -38,6 +41,7 @@ export default function ContentGen() {
   const [descriptionLength, setDescriptionLength] = useState<string>("medium");
   const [hashtagCount, setHashtagCount] = useState<number>(15);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [_uploadedJobId, setUploadedJobId] = useState<string | null>(null);
 
   // Detect screen size and set initial state
   useEffect(() => {
@@ -52,6 +56,12 @@ export default function ContentGen() {
 
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
+
+  // Handle upload completion
+  const handleUploadComplete = (jobId: string, file: FileWithPreview) => {
+    setUploadedJobId(jobId);
+    console.log("File uploaded successfully:", { jobId, fileName: file.file.name });
+  };
 
   const HistoryContent = () => (
     <>
@@ -77,6 +87,8 @@ export default function ContentGen() {
                 <ProgressUpload
                   accept="video/*,audio/*,image/*"
                   maxSize={250 * 1024 * 1024}
+                  clientId={activeClient?.id || null}
+                  onUploadComplete={handleUploadComplete}
                 />
                 <div className="w-full max-w-2xl space-y-2">
                   <Select
