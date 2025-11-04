@@ -47,6 +47,7 @@ export interface UploadFileResponse {
 
 // Types for Jobs API
 export interface Job {
+  [x: string]: any;
   job_id: string;
   client_id: number;
   client_name: string;
@@ -57,7 +58,7 @@ export interface Job {
   created_at: string;
   completed_at?: string;
   processing_time?: string;
-  video_url?: string;
+  source_url?: string;
 }
 
 export interface GetJobsResponse {

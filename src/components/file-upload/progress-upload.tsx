@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   formatBytes,
   useFileUpload,
@@ -81,9 +81,18 @@ export default function ProgressUpload({
 
   const [uploadFiles, setUploadFiles] =
     useState<FileUploadItem[]>(defaultUploadFiles);
+  const uploadingRef = useRef<Set<string>>(new Set());
 
   // Function to upload a file to the real API
   const uploadFileToAPI = async (fileItem: FileUploadItem) => {
+    // Prevent duplicate uploads using ref (doesn't trigger re-renders)
+    if (uploadingRef.current.has(fileItem.id)) {
+      return;
+    }
+    
+    // Mark as uploading
+    uploadingRef.current.add(fileItem.id);
+    
     if (!clientId) {
       setUploadFiles((prev) =>
         prev.map((f) =>
@@ -96,6 +105,7 @@ export default function ProgressUpload({
             : f
         )
       );
+      uploadingRef.current.delete(fileItem.id);
       return;
     }
 
@@ -112,6 +122,7 @@ export default function ProgressUpload({
             : f
         )
       );
+      uploadingRef.current.delete(fileItem.id);
       return;
     }
 
@@ -142,8 +153,11 @@ export default function ProgressUpload({
         )
       );
 
-      // Call onUploadComplete callback
+      // Call onUploadComplete callback ONCE
       onUploadComplete?.(response.job_id, fileItem);
+      
+      // Remove from uploading set after completion
+      uploadingRef.current.delete(fileItem.id);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Upload failed. Please try again.";
       setUploadFiles((prev) =>
@@ -157,6 +171,9 @@ export default function ProgressUpload({
             : f
         )
       );
+      
+      // Remove from uploading set after error
+      uploadingRef.current.delete(fileItem.id);
     }
   };
 
@@ -208,7 +225,8 @@ export default function ProgressUpload({
       if (!simulateUpload) {
         newUploadFiles.forEach((fileItem) => {
           const isNewFile = !uploadFiles.find((f) => f.id === fileItem.id);
-          if (isNewFile && fileItem.status === "uploading") {
+          // Only upload if it's a new file AND not already in uploading ref
+          if (isNewFile && fileItem.status === "uploading" && !uploadingRef.current.has(fileItem.id)) {
             uploadFileToAPI(fileItem);
           }
         });
@@ -258,6 +276,9 @@ export default function ProgressUpload({
   }, [simulateUpload]);
 
   const retryUpload = (fileId: string) => {
+    // Clear from uploading ref to allow retry
+    uploadingRef.current.delete(fileId);
+    
     setUploadFiles((prev) =>
       prev.map((file) =>
         file.id === fileId
@@ -281,6 +302,9 @@ export default function ProgressUpload({
   };
 
   const removeUploadFile = (fileId: string) => {
+    // Clean up uploading ref
+    uploadingRef.current.delete(fileId);
+    
     setUploadFiles((prev) => prev.filter((file) => file.id !== fileId));
     removeFile(fileId);
   };
