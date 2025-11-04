@@ -27,10 +27,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { History, ChevronDown, Sparkles } from "lucide-react";
+import { History, ChevronDown, Sparkles, FileAudio, FileVideo, FileImage, Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useClients } from "@/contexts/client-context";
 import type { FileWithPreview } from "@/hooks/use-file-upload";
+import { TranscribeService, type Job } from "@/lib/api-services";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function ContentGen() {
   const { activeClient } = useClients();
@@ -41,7 +44,9 @@ export default function ContentGen() {
   const [descriptionLength, setDescriptionLength] = useState<string>("medium");
   const [hashtagCount, setHashtagCount] = useState<number>(15);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [_uploadedJobId, setUploadedJobId] = useState<string | null>(null);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [isLoadingJobs, setIsLoadingJobs] = useState(false);
+  const [jobsError, setJobsError] = useState<string | null>(null);
 
   // Detect screen size and set initial state
   useEffect(() => {
@@ -57,16 +62,192 @@ export default function ContentGen() {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
+  // Fetch jobs
+  const fetchJobs = async () => {
+    if (!activeClient) return;
+    
+    try {
+      setIsLoadingJobs(true);
+      setJobsError(null);
+      const response = await TranscribeService.getJobs({
+        client_id: activeClient.id,
+        limit: 50,
+        offset: 0,
+      });
+      
+      if (response.success !== false) {
+        setJobs(response.jobs);
+      } else {
+        setJobsError(response.message || "Failed to load jobs");
+      }
+    } catch (error: unknown) {
+      // Handle different error formats
+      let errorMessage = "Something went wrong";
+      
+      // Log errors in development for debugging
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Error details:", error);
+        if (error && typeof error === 'object') {
+          console.log("Error keys:", Object.keys(error));
+        }
+      }
+      
+      if (error && typeof error === 'object') {
+        if ('message' in error && typeof error.message === 'string') {
+          errorMessage = error.message;
+        } else if ('data' in error && error.data && typeof error.data === 'object' && 'message' in error.data) {
+          errorMessage = (error.data as { message: string }).message;
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      setJobsError(errorMessage);
+    } finally {
+      setIsLoadingJobs(false);
+    }
+  };
+
+  // Fetch jobs when active client changes
+  useEffect(() => {
+    if (activeClient) {
+      fetchJobs();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeClient]);
+
   // Handle upload completion
   const handleUploadComplete = (jobId: string, file: FileWithPreview) => {
-    setUploadedJobId(jobId);
     console.log("File uploaded successfully:", { jobId, fileName: file.file.name });
+    // Refresh jobs list after upload
+    fetchJobs();
+  };
+
+  // Helper functions
+  const getFileIcon = (fileType: string) => {
+    switch (fileType) {
+      case 'audio':
+        return <FileAudio className="h-5 w-5" />;
+      case 'video':
+        return <FileVideo className="h-5 w-5" />;
+      case 'image':
+        return <FileImage className="h-5 w-5" />;
+      default:
+        return <FileAudio className="h-5 w-5" />;
+    }
+  };
+
+  const getStatusBadge = (status: string, progress: number) => {
+    switch (status) {
+      case 'completed':
+        return (
+          <Badge variant="success">
+            Completed
+          </Badge>
+        );
+      case 'processing':
+        return (
+          <Badge variant="info">
+            Processing {progress}
+          </Badge>
+        );
+      case 'failed':
+        return (
+          <Badge variant="destructive">
+            Failed
+          </Badge>
+        );
+      case 'pending':
+        return (
+          <Badge variant="secondary">
+            Pending
+          </Badge>
+        );
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return dateString;
+    }
   };
 
   const HistoryContent = () => (
-    <>
-      <div className="space-y-4"></div>
-    </>
+    <ScrollArea className="h-[calc(100vh-140px)]">
+      <div className="space-y-3 pr-4">
+        {isLoadingJobs ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : jobsError ? (
+          <div className="text-center py-8">
+            <p className="text-sm text-destructive">{jobsError}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={fetchJobs}
+              className="mt-2"
+            >
+              Retry
+            </Button>
+          </div>
+        ) : jobs.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-sm text-muted-foreground">No jobs found</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Upload a file to get started
+            </p>
+          </div>
+        ) : (
+          jobs.map((job) => (
+            <Card key={job.job_id} className="py-4">
+              <CardHeader>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {getFileIcon(job.file_type)}
+                    <CardTitle className="text-sm truncate">
+                      {job.original_filename}
+                    </CardTitle>
+                  </div>
+                  {getStatusBadge(job.status, job.progress)}
+                </div>
+                <CardDescription className="text-xs">
+                  {formatDate(job.created_at)}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pb-0">
+                <div className="space-y-1 text-xs text-muted-foreground">
+                  {job.processing_time && (
+                    <p>Processing time: {job.processing_time}</p>
+                  )}
+                  {job.video_url && job.status === 'completed' && (
+                    <a 
+                      href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${job.video_url}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline block"
+                    >
+                      View/Download
+                    </a>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+    </ScrollArea>
   );
 
   return (
@@ -314,11 +495,11 @@ export default function ContentGen() {
           <div className="hidden lg:block relative">
             <div
               className={`h-[calc(100vh-72px)] bg-accent/40 transition-all duration-300 ease-in-out overflow-hidden ${
-                isHistoryOpen ? "w-[19rem]" : "w-0"
+                isHistoryOpen ? "w-[22rem]" : "w-0"
               }`}
             >
               <div
-                className={`w-[19rem] h-full p-4 ${
+                className={`w-[22rem] h-full p-4 ${
                   isHistoryOpen ? "opacity-100 delay-150" : "opacity-0 delay-0"
                 }`}
               >

@@ -45,6 +45,30 @@ export interface UploadFileResponse {
   note?: string;
 }
 
+// Types for Jobs API
+export interface Job {
+  job_id: string;
+  client_id: number;
+  client_name: string;
+  file_type: 'audio' | 'video' | 'image';
+  original_filename: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  progress: number;
+  created_at: string;
+  completed_at?: string;
+  processing_time?: string;
+  video_url?: string;
+}
+
+export interface GetJobsResponse {
+  success: boolean;
+  message?: string;
+  total: number;
+  limit: number;
+  offset: number;
+  jobs: Job[];
+}
+
 // Client service
 export class ClientService {
   // Get all clients
@@ -94,6 +118,41 @@ export class TranscribeService {
       return response.data;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to upload file';
+      throw {
+        success: false,
+        message: errorMessage,
+      } as ApiError;
+    }
+  }
+
+  // Get all jobs for authenticated user
+  static async getJobs(params: {
+    limit?: number;
+    offset?: number;
+    client_id: number;  // Required parameter
+    status?: string;
+  }): Promise<GetJobsResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append('client_id', params.client_id.toString());
+      queryParams.append('limit', (params.limit || 10).toString());
+      queryParams.append('offset', (params.offset !== undefined ? params.offset : 0).toString());
+      if (params?.status) queryParams.append('status', params.status);
+
+      const response = await api.get(
+        `/api/transcribe/jobs?${queryParams.toString()}`
+      );
+      return response.data;
+    } catch (error: unknown) {
+      // Handle axios interceptor error format
+      if (error && typeof error === 'object' && 'message' in error) {
+        throw {
+          success: false,
+          message: (error as { message: string }).message,
+        } as ApiError;
+      }
+      
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch jobs';
       throw {
         success: false,
         message: errorMessage,

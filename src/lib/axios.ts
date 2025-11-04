@@ -46,6 +46,20 @@ api.interceptors.response.use(
     return response;
   },
   async (error) => {
+    // Log errors in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log("Axios error interceptor:", error);
+    }
+    
+    // Handle network errors (no response)
+    if (!error.response) {
+      return Promise.reject({
+        message: error.message || 'Network error - please check your connection',
+        status: 0,
+        data: null
+      });
+    }
+    
     // Handle common errors
     if (error.response?.status === 401) {
       // Token expired or invalid - sign out using NextAuth
@@ -65,7 +79,19 @@ api.interceptors.response.use(
     }
     
     // Return the error with a consistent format
-    const errorMessage = error.response?.data?.message || 'An unexpected error occurred';
+    let errorMessage = error.response?.data?.message || error.response?.statusText || 'An unexpected error occurred';
+    
+    // Handle FastAPI validation errors (422)
+    if (error.response?.status === 422 && error.response?.data?.detail) {
+      const detail = error.response.data.detail;
+      if (Array.isArray(detail) && detail.length > 0) {
+        // Format validation errors
+        errorMessage = detail.map((err: { msg: string; loc: string[] }) => 
+          `${err.loc.join('.')}: ${err.msg}`
+        ).join(', ');
+      }
+    }
+    
     return Promise.reject({
       message: errorMessage,
       status: error.response?.status,
