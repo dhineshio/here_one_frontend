@@ -1,9 +1,11 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { FileAudio, FileVideo, FileImage, ExternalLink } from "lucide-react";
+import { FileAudio, FileVideo, FileImage, Clock, Download, Eye, Loader2, CheckCircle2, XCircle, Clock3 } from "lucide-react";
 import type { Job } from "@/lib/api-services";
 import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "radix-ui";
 
 interface JobCardProps {
   job: Job;
@@ -12,28 +14,41 @@ interface JobCardProps {
 const getFileIcon = (fileType: string) => {
   switch (fileType) {
     case 'audio':
-      return <FileAudio className="h-5 w-5 text-muted-foreground" />;
+      return <FileAudio className="h-8 w-8 text-muted-foreground" />;
     case 'video':
-      return <FileVideo className="h-5 w-5 text-muted-foreground" />;
+      return <FileVideo className="h-8 w-8 text-muted-foreground" />;
     case 'image':
-      return <FileImage className="h-5 w-5 text-muted-foreground" />;
+      return <FileImage className="h-8 w-8 text-muted-foreground" />;
     default:
-      return <FileAudio className="h-5 w-5 text-muted-foreground" />;
+      return <FileAudio className="h-8 w-8 text-muted-foreground" />;
   }
 };
 
 const formatTime = (dateString: string) => {
   try {
     const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
-    if (diffInSeconds < 60) return 'Just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
   } catch {
     return '';
+  }
+};
+
+const getStatusIcon = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'completed':
+      return <CheckCircle2 className="h-3 w-3" />;
+    case 'processing':
+      return <Loader2 className="h-3 w-3 animate-spin" />;
+    case 'failed':
+      return <XCircle className="h-3 w-3" />;
+    case 'pending':
+      return <Clock3 className="h-3 w-3" />;
+    default:
+      return <Clock3 className="h-3 w-3" />;
   }
 };
 
@@ -47,44 +62,56 @@ export function JobCard({ job }: JobCardProps) {
 
   return (
     <Card 
-      className="p-3 hover:bg-accent/50 transition-colors cursor-pointer overflow-hidden"
+      className="group hover:shadow-md transition-all cursor-pointer gap-0! overflow-hidden border p-0"
       onClick={handleClick}
     >
-      <div className="flex items-start gap-3">
-        {/* Thumbnail Preview or Icon */}
-        <div className="flex-shrink-0 w-16 h-16 rounded overflow-hidden bg-accent flex items-center justify-center relative">
-            {job.file_type === 'video' ? (
-              <video 
-                src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${job.source_url}`}
-                className="object-cover w-full h-full"
-                muted
-                playsInline
-              />
-            ) : job.file_type === 'image' ? (
-              <Image 
-                src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${job.source_url}`}
-                alt={job.original_filename}
-                width={64}
-                height={64}
-                className="object-cover w-full h-full"
-                unoptimized
-              />
-            ) : (
-              getFileIcon(job.file_type)
-            )}
-        </div>
+      {/* Thumbnail Section */}
+      <div className="relative w-full aspect-video bg-accent/50 overflow-hidden">
+        {job.file_type === 'video' ? (
+          <video 
+            src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${job.source_url}`}
+            className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-300"
+            muted
+            playsInline
+          />
+        ) : job.file_type === 'image' ? (
+          <Image 
+            src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${job.source_url}`}
+            alt={job.original_filename}
+            fill
+            className="object-contain align-top group-hover:scale-105 transition-transform duration-300 bg-gradient-to-br from-primary/10 to-background/5"
+            unoptimized
+          />
+        ) : (
+          <div className="w-full h-full aspect-video flex items-center justify-center">
+            {getFileIcon(job.file_type)}
+          </div>
+        )}
+      </div>
 
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-            <p 
-              className="text-sm font-medium flex-1 truncate w-[200px] text-ellipsis" 
-              title={job.original_filename}
-            >
-              {job.original_filename}
-            </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {formatTime(job.created_at)}
-          </p>
+      {/* Content Section */}
+      <div className="p-2 space-y-2">
+        {/* Status Badge */}
+        <div>
+          <Badge className={`bg-gray-500/10 border-0 text-xs px-2! rounded-xs gap-1`}>
+            {getStatusIcon(job.status)}
+            <span className="capitalize">{job.status}</span>
+          </Badge> 
+        </div>
+        <h4 
+          className="text-sm font-medium line-clamp-1" 
+          title={job.original_filename}
+        >
+          {job.original_filename}
+        </h4>
+        
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+          <div className="flex items-center gap-1">
+            <span>{formatTime(job.created_at)}</span>
+          </div>
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Eye className="h-4 w-4" />
+          </div>
         </div>
       </div>
     </Card>

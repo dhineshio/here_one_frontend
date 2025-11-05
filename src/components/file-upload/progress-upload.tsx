@@ -337,13 +337,11 @@ export default function ProgressUpload({
     if (accept === "video/*,audio/*,image/*") {
       return {
         title: "Upload your media files",
-        description: "Drag and drop videos, audio files, or images here or click to browse",
         supportText: `Supports video, audio, and image files up to ${formatBytes(maxSize)} each`
       };
     }
     return {
       title: "Upload your files",
-      description: "Drag and drop files here or click to browse",
       supportText: `Support for multiple file types up to ${formatBytes(maxSize)} each`
     };
   };
@@ -351,11 +349,11 @@ export default function ProgressUpload({
   const uploadText = getUploadDescription();
 
   return (
-    <div className={cn("w-full max-w-2xl", className)}>
+    <div className={cn("", className)}>
       {/* Upload Area */}
       <div
         className={cn(
-          "relative rounded-lg border border-dashed p-8 text-center transition-colors",
+          "relative rounded-lg border border-dashed p-4 text-center transition-colors",
           isDragging
             ? "border-primary bg-primary/5"
             : "border-muted-foreground/25 hover:border-muted-foreground/50"
@@ -370,7 +368,7 @@ export default function ProgressUpload({
         <div className="flex flex-col items-center gap-4">
           <div
             className={cn(
-              "flex h-16 w-16 items-center justify-center rounded-full",
+              "flex h-12 w-12 items-center justify-center rounded-full",
               isDragging ? "bg-primary/10" : "bg-muted"
             )}
           >
@@ -383,16 +381,13 @@ export default function ProgressUpload({
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-lg font-semibold">{uploadText.title}</h3>
-            <p className="text-sm text-muted-foreground">
-              {uploadText.description}
-            </p>
-            <p className="text-xs text-muted-foreground">
+            <h3 className="text-sm font-semibold">{uploadText.title}</h3>
+            <p className="text-[10px] text-muted-foreground">
               {uploadText.supportText}
             </p>
           </div>
 
-          <Button onClick={openFileDialog}>
+          <Button onClick={openFileDialog} size="sm" className="text-xs">
             <UploadIcon />
             Select files
           </Button>
@@ -401,7 +396,7 @@ export default function ProgressUpload({
 
       {/* Upload Stats */}
       {uploadFiles.length > 0 && (
-        <div className="flex items-center justify-between mt-6">
+        <div className="flex items-center justify-between mt-4">
           <div className="flex items-center gap-2">
             <h4 className="text-sm font-medium">Upload Progress</h4>
             <div className="flex items-center gap-2">
@@ -431,11 +426,11 @@ export default function ProgressUpload({
 
       {/* File List */}
       {uploadFiles.length > 0 && (
-        <div className="mt-4 space-y-3">
+        <div className="mt-3 space-y-3">
           {uploadFiles.map((fileItem) => (
             <div
               key={fileItem.id}
-              className="rounded-lg border border-border bg-card p-4"
+              className="rounded-lg border border-border bg-card p-2"
             >
               <div className="flex items-start gap-2.5">
                 {/* File Icon */}
@@ -457,13 +452,13 @@ export default function ProgressUpload({
                 {/* File Info */}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between mt-0.75">
-                    <p className="inline-flex flex-col justify-center gap-1 truncate font-medium">
-                      <span className="text-sm">{fileItem.file.name}</span>
-                      <span className="text-xs text-muted-foreground">
+                    <p className="inline-flex flex-col justify-center gap-1 font-medium min-w-0">
+                      <span className="text-sm max-w-[220px] truncate text-ellipsis">{fileItem.file.name}</span>
+                      <span className="text-xs text-muted-foreground max-w-[220px] truncate text-ellipsis">
                         {formatBytes(fileItem.file.size)}
                       </span>
                     </p>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       {/* Remove Button */}
                       <Button
                         onClick={() => removeUploadFile(fileItem.id)}

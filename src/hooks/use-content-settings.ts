@@ -6,13 +6,15 @@ export interface ContentSettings {
   audioLanguage: string;
   captionLength: string;
   descriptionLength: string;
+  captionStyle: string;
   hashtagCount: number;
 }
 
 export function useContentSettings() {
   const [audioLanguage, setAudioLanguage] = useState<string>("");
-  const [captionLength, setCaptionLength] = useState<string>("medium");
-  const [descriptionLength, setDescriptionLength] = useState<string>("medium");
+  const [captionLength, setCaptionLength] = useState<string>("");
+  const [descriptionLength, setDescriptionLength] = useState<string>("");
+  const [captionStyle, setCaptionStyle] = useState<string>("");
   const [hashtagCount, setHashtagCount] = useState<number>(15);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -20,6 +22,7 @@ export function useContentSettings() {
     audioLanguage,
     captionLength,
     descriptionLength,
+    captionStyle,
     hashtagCount,
   };
 
@@ -30,6 +33,8 @@ export function useContentSettings() {
     setCaptionLength,
     descriptionLength,
     setDescriptionLength,
+    captionStyle,
+    setCaptionStyle,
     hashtagCount,
     setHashtagCount,
     isSettingsOpen,

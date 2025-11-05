@@ -4,18 +4,22 @@ import { useState, useEffect } from "react";
 import AuthGuard from "@/components/auth/auth-guard";
 import ProgressUpload from "@/components/file-upload/progress-upload";
 import { AppLayout } from "@/components/layout/app-layout";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { History, Sparkles } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useClients } from "@/contexts/client-context";
 import type { FileWithPreview } from "@/hooks/use-file-upload";
-import type { Job } from "@/lib/api-services";
 import { useJobs } from "@/hooks/use-jobs";
 import { useContentSettings } from "@/hooks/use-content-settings";
-import { HistorySidebar } from "@/components/content-gen/history-sidebar";
-import { ContentSettings } from "@/components/content-gen/content-settings";
 import { LanguageSelector } from "@/components/content-gen/language-selector";
+import { Label } from "@/components/ui/label";
+import { CaptionSelector } from "@/components/content-gen/caption-selector";
+import { DescriptionSelector } from "@/components/content-gen/description-selector";
+import { Separator } from "radix-ui";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Loader2, Sparkle } from "lucide-react";
+import { StyleSelector } from "@/components/content-gen/style-selector";
+import { Counter } from "@/components/content-gen/counter";
+import { JobCard } from "@/components/content-gen/job-card";
 
 export default function ContentGen() {
   const { activeClient } = useClients();
@@ -35,6 +39,8 @@ export default function ContentGen() {
     setCaptionLength,
     descriptionLength,
     setDescriptionLength,
+    captionStyle,
+    setCaptionStyle,
     hashtagCount,
     setHashtagCount,
     isSettingsOpen,
@@ -68,97 +74,134 @@ export default function ContentGen() {
       <AuthGuard requireAuth={true}>
         <div className="min-h-screen text-black dark:text-white flex">
           {/* Main Content Area */}
-          <div className="flex-1 space-y-4 relative overflow-y-scroll">
-            <Button
-              variant="outline"
-              size="icon"
-              className="absolute top-2 right-2 z-10"
-              onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-            >
-              <History />
-            </Button>
-            
-            <ScrollArea className="h-[calc(100vh-72px)] w-full">
-              <div className="w-full p-4 md:p-6 lg:p-8 flex flex-col items-center mt-10 lg:mt-0 space-y-5">
+          <div className="h-[calc(100vh-72px)] w-full md:w-sm border-r relative flex flex-col">
+            {/* Scrollable Area */}
+            <div className="flex-1 overflow-y-auto p-4 pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <div className="space-y-4 pb-4">
                 {/* File Upload */}
                 <ProgressUpload
                   accept="video/*,audio/*,image/*"
                   maxSize={250 * 1024 * 1024}
                   clientId={activeClient?.id || null}
                   onUploadComplete={handleUploadComplete}
+                  className="w-full"
                 />
+                <div className="space-y-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="audioLanguage" className="text-muted-foreground text-xs">Audio Language</Label>
+                    <LanguageSelector
+                      value={audioLanguage}
+                      onValueChange={setAudioLanguage}
+                    />
+                  </div>
 
-                {/* Language Selector */}
-                <LanguageSelector
-                  value={audioLanguage}
-                  onValueChange={setAudioLanguage}
-                />
+                  <div className="space-y-0.5 mt-4">
+                    <Label htmlFor="captionLength" className="text-muted-foreground text-xs mb-2">Content Settings</Label>
+                    <CaptionSelector
+                      value={captionLength}
+                      onValueChange={setCaptionLength}
+                    />
+                    <DescriptionSelector
+                      value={descriptionLength}
+                      onValueChange={setDescriptionLength}
+                    />
+                    <StyleSelector
+                      value={captionStyle}
+                      onValueChange={setCaptionStyle}
+                    />
+                  </div>
 
-                {/* Content Settings */}
-                <ContentSettings
-                  isOpen={isSettingsOpen}
-                  onOpenChange={setIsSettingsOpen}
-                  captionLength={captionLength}
-                  onCaptionLengthChange={setCaptionLength}
-                  descriptionLength={descriptionLength}
-                  onDescriptionLengthChange={setDescriptionLength}
-                  hashtagCount={hashtagCount}
-                  onHashtagCountChange={setHashtagCount}
-                />
-
-                {/* Generate Button */}
-                <div className="w-full max-w-2xl">
-                  <Button className="w-full h-12 text-lg font-semibold" size="lg">
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Generate
-                  </Button>
-                </div>
-              </div>
-            </ScrollArea>
-          </div>
-
-          {/* Mobile/Tablet: Sheet Overlay */}
-          <div className="lg:hidden">
-            <Sheet open={isHistoryOpen && !isLargeScreen} onOpenChange={setIsHistoryOpen}>
-              <SheetContent side="right" className="w-[19rem]">
-                <SheetHeader>
-                  <SheetTitle>History</SheetTitle>
-                </SheetHeader>
-                <div className="mt-4 p-2">
-                  <HistorySidebar
-                    jobs={jobs}
-                    isLoading={isLoading}
-                    error={error}
-                    onRetry={refetch}
-                  />
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-
-          {/* Desktop (lg+): Sidebar */}
-          <div className="hidden lg:block relative">
-            <div
-              className={`h-[calc(100vh-72px)] bg-accent/40 transition-all duration-300 ease-in-out overflow-hidden ${
-                isHistoryOpen ? "w-[22rem]" : "w-0"
-              }`}
-            >
-              <div
-                className={`w-[22rem] h-full p-4 transition-opacity duration-300 ${
-                  isHistoryOpen ? "opacity-100 delay-150" : "opacity-0 delay-0"
-                }`}
-              >
-                <HistorySidebar
-                  jobs={jobs}
-                  isLoading={isLoading}
-                  error={error}
-                  onRetry={refetch}
-                />
+                  <div className="flex items-center justify-between mt-4">
+                    <Label htmlFor="hashtagCount" className=" text-xs text-muted-foreground">Hashtag Count</Label>
+                    <Counter
+                      value={hashtagCount}
+                      setValue={setHashtagCount}
+                    />
+                  </div>
+                </div>  
               </div>
             </div>
+            
+            {/* Fixed Bottom Section */}
+            <div className="border-t p-4">
+              <Textarea placeholder="Enter your prompt here" className="w-full h-24 resize-none"></Textarea>
+              <Button className="mt-2 w-full mb-6" size="lg"><Sparkle className="mr-2 h-4 w-4" /> Generate</Button>
+            </div>
+          </div>
+
+          {/* Job List */}
+          <div className="flex-1 hidden md:block">
+            <ScrollArea className="h-[calc(100vh-72px)]">
+              <div className="space-y-6 pr-2 p-4">
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : error ? (
+                <div className="text-center py-8">
+                  <p className="text-sm text-destructive">{error}</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-2"
+                  >
+                    Retry
+                  </Button>
+                </div>
+              ) : jobs.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-sm text-muted-foreground">No jobs found</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Upload a file to get started
+                  </p>
+                </div>
+              ) : (
+                (() => {
+                  // Group jobs by day
+                  const groupedJobs = jobs.reduce((groups, job) => {
+                    const date = new Date(job.created_at);
+                    const today = new Date();
+                    const yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    
+                    let dayLabel;
+                    if (date.toDateString() === today.toDateString()) {
+                      dayLabel = 'Today';
+                    } else if (date.toDateString() === yesterday.toDateString()) {
+                      dayLabel = 'Yesterday';
+                    } else {
+                      dayLabel = date.toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      });
+                    }
+                    
+                    if (!groups[dayLabel]) {
+                      groups[dayLabel] = [];
+                    }
+                    groups[dayLabel].push(job);
+                    return groups;
+                  }, {} as Record<string, typeof jobs>);
+
+                  return Object.entries(groupedJobs).map(([day, dayJobs]) => (
+                    <div key={day} className="space-y-3">
+                      <h3 className="text-sm font-semibold text-muted-foreground">{day}</h3>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+                        {dayJobs.map((job) => (
+                          <JobCard key={job.job_id} job={job} />
+                        ))}
+                      </div>
+                    </div>
+                  ));
+                })()
+              )}
+              </div>
+            </ScrollArea>
           </div>
         </div>
       </AuthGuard>
     </AppLayout>
+
   );
 }
