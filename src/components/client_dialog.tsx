@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {  Camera, User } from "lucide-react";
+import { useClients } from "@/contexts/client-context";
+import ClientService, { CreateClientRequest } from "@/lib/api-services";
 
 const INDUSTRY_CHOICES = [
   { value: "technology", label: "Technology" },
@@ -44,30 +46,19 @@ const INDUSTRY_CHOICES = [
 
 interface ClientFormData {
   // Basic Information
-  clientName: string;
-  industryType: string;
-  preferredPostTime: string;
-  companyName: string;
-  industry: string;
-  description: string;
+  client_name: string;
+  industry_type: string;
+  preferred_post_time: string;
 
   // Contact Information
-  contactPersonName: string;
-  contactEmail: string;
-  contactPhone: string;
-  email: string;
-  phone: string;
-  website: string;
-  address: string;
+  contact_person: string;
+  contact_email: string;
+  contact_phone: string;
 
-  // Social Media Accounts
-  facebookProfile: string;
-  instagramProfile: string;
-  youtubeUrl: string;
-  facebook: string;
-  twitter: string;
-  linkedin: string;
-  instagram: string;
+  // Social Media Accounts (only 3 for now)
+  facebook_url: string;
+  instagram_url: string;
+  youtube_url: string;
 }
 
 const steps = [
@@ -85,30 +76,21 @@ export default function ClientDialog({
   open,
   onOpenChange,
 }: ClientDialogProps = {}) {
+  const { refreshClients } = useClients();
   const [currentStep, setCurrentStep] = useState(1);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<ClientFormData>({
-    clientName: "",
-    industryType: "",
-    preferredPostTime: "",
-    companyName: "",
-    industry: "",
-    description: "",
-    contactPersonName: "",
-    contactEmail: "",
-    contactPhone: "",
-    email: "",
-    phone: "",
-    website: "",
-    address: "",
-    facebookProfile: "",
-    instagramProfile: "",
-    youtubeUrl: "",
-    facebook: "",
-    twitter: "",
-    linkedin: "",
-    instagram: "",
+    client_name: "",
+    industry_type: "",
+    preferred_post_time: "",
+    contact_person: "",
+    contact_email: "",
+    contact_phone: "",
+    facebook_url: "",
+    instagram_url: "",
+    youtube_url: "",
   });
 
   const handleInputChange = (
@@ -152,12 +134,12 @@ export default function ClientDialog({
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.clientName.trim()) {
-      newErrors.clientName = "Client name is required";
+    if (!formData.client_name.trim()) {
+      newErrors.client_name = "Client name is required";
     }
 
-    if (!formData.industryType) {
-      newErrors.industryType = "Industry type is required";
+    if (!formData.industry_type) {
+      newErrors.industry_type = "Industry type is required";
     }
 
     setErrors(newErrors);
@@ -167,18 +149,14 @@ export default function ClientDialog({
   const validateStep2 = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.contactPersonName.trim()) {
-      newErrors.contactPersonName = "Contact person name is required";
+    if (!formData.contact_person.trim()) {
+      newErrors.contact_person = "Contact person name is required";
     }
 
-    if (!formData.contactEmail.trim()) {
-      newErrors.contactEmail = "Contact email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail)) {
-      newErrors.contactEmail = "Please enter a valid email address";
-    }
-
-    if (!formData.contactPhone.trim()) {
-      newErrors.contactPhone = "Contact phone is required";
+    if (!formData.contact_email.trim()) {
+      newErrors.contact_email = "Contact email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contact_email)) {
+      newErrors.contact_email = "Please enter a valid email address";
     }
 
     setErrors(newErrors);
@@ -207,7 +185,7 @@ export default function ClientDialog({
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validate all steps before submission
     const step1Valid = validateStep1();
     const step2Valid = validateStep2();
@@ -222,8 +200,43 @@ export default function ClientDialog({
       return;
     }
 
-    // Close dialog after submission
-    onOpenChange?.(false);
+    try {
+      setIsSubmitting(true);
+      setErrors({});
+
+      // Prepare data for API
+      const clientData: CreateClientRequest = {
+        client_name: formData.client_name.trim(),
+        contact_person: formData.contact_person.trim(),
+        contact_email: formData.contact_email.trim(),
+        industry_type: formData.industry_type,
+        // Optional fields
+        ...(formData.contact_phone.trim() && { contact_phone: formData.contact_phone.trim() }),
+        ...(formData.preferred_post_time && { preferred_post_time: formData.preferred_post_time }),
+        ...(profileImage && { brand_logo: profileImage }), // Include base64 image data
+        ...(formData.facebook_url.trim() && { facebook_url: formData.facebook_url.trim() }),
+        ...(formData.instagram_url.trim() && { instagram_url: formData.instagram_url.trim() }),
+        ...(formData.youtube_url.trim() && { youtube_url: formData.youtube_url.trim() }),
+      };
+
+      const response = await ClientService.createClient(clientData);
+
+      if (response.success) {
+        // Refresh the client list
+        await refreshClients();
+        // Close dialog after successful submission
+        onOpenChange?.(false);
+      } else {
+        setErrors({ submit: response.message });
+      }
+    } catch (error: any) {
+      console.error('Error creating client:', error);
+      setErrors({ 
+        submit: error?.message || 'Failed to create client. Please try again.' 
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Reset form when dialog closes
@@ -232,27 +245,17 @@ export default function ClientDialog({
       setCurrentStep(1);
       setProfileImage(null);
       setErrors({});
+      setIsSubmitting(false);
       setFormData({
-        clientName: "",
-        industryType: "",
-        preferredPostTime: "",
-        companyName: "",
-        industry: "",
-        description: "",
-        contactPersonName: "",
-        contactEmail: "",
-        contactPhone: "",
-        email: "",
-        phone: "",
-        website: "",
-        address: "",
-        facebookProfile: "",
-        instagramProfile: "",
-        youtubeUrl: "",
-        facebook: "",
-        twitter: "",
-        linkedin: "",
-        instagram: "",
+        client_name: "",
+        industry_type: "",
+        preferred_post_time: "",
+        contact_person: "",
+        contact_email: "",
+        contact_phone: "",
+        facebook_url: "",
+        instagram_url: "",
+        youtube_url: "",
       });
     }
   }, [open]);
@@ -373,47 +376,47 @@ export default function ClientDialog({
                   <div className="space-y-6">
                     <div className="space-y-2">
                       <Label
-                        htmlFor="clientName"
+                        htmlFor="client_name"
                         className="text-muted-foreground"
                       >
                         Client Name <span className="text-destructive">*</span>
                       </Label>
                       <Input
-                        id="clientName"
-                        name="clientName"
+                        id="client_name"
+                        name="client_name"
                         placeholder="Enter client name"
-                        value={formData.clientName}
+                        value={formData.client_name}
                         onChange={handleInputChange}
                         className={cn(
-                          errors.clientName && "border-destructive"
+                          errors.client_name && "border-destructive"
                         )}
                       />
-                      {errors.clientName && (
+                      {errors.client_name && (
                         <p className="text-sm text-destructive">
-                          {errors.clientName}
+                          {errors.client_name}
                         </p>
                       )}
                     </div>
 
                     <div className="space-y-2">
                       <Label
-                        htmlFor="industryType"
+                        htmlFor="industry_type"
                         className="text-muted-foreground"
                       >
                         Industry Type{" "}
                         <span className="text-destructive">*</span>
                       </Label>
                       <Select
-                        value={formData.industryType}
+                        value={formData.industry_type}
                         onValueChange={(value) =>
-                          handleSelectChange("industryType", value)
+                          handleSelectChange("industry_type", value)
                         }
                       >
                         <SelectTrigger
-                          id="industryType"
+                          id="industry_type"
                           className={cn(
                             "w-full",
-                            errors.industryType && "border-destructive"
+                            errors.industry_type && "border-destructive"
                           )}
                         >
                           <SelectValue placeholder="Select industry type" />
@@ -429,47 +432,32 @@ export default function ClientDialog({
                           ))}
                         </SelectContent>
                       </Select>
-                      {errors.industryType && (
+                      {errors.industry_type && (
                         <p className="text-sm text-destructive">
-                          {errors.industryType}
+                          {errors.industry_type}
                         </p>
                       )}
                     </div>
 
                     <div className="space-y-2">
                       <Label
-                        htmlFor="preferredPostTime"
+                        htmlFor="preferred_post_time"
                         className="text-muted-foreground"
                       >
                         Preferred Post Time
                       </Label>
-                      <Select
-                        value={formData.preferredPostTime}
-                        onValueChange={(value) =>
-                          handleSelectChange("preferredPostTime", value)
-                        }
-                      >
-                        <SelectTrigger
-                          id="preferredPostTime"
-                          className="w-full"
-                        >
-                          <SelectValue placeholder="Select preferred post time" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="morning">
-                            Morning (6:00 AM - 12:00 PM)
-                          </SelectItem>
-                          <SelectItem value="afternoon">
-                            Afternoon (12:00 PM - 6:00 PM)
-                          </SelectItem>
-                          <SelectItem value="evening">
-                            Evening (6:00 PM - 12:00 AM)
-                          </SelectItem>
-                          <SelectItem value="night">
-                            Night (12:00 AM - 6:00 AM)
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Input
+                        id="preferred_post_time"
+                        name="preferred_post_time"
+                        type="time"
+                        placeholder="HH:MM"
+                        value={formData.preferred_post_time}
+                        onChange={handleInputChange}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Use 24-hour format (e.g., 14:30 for 2:30 PM)
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -490,69 +478,68 @@ export default function ClientDialog({
                   {/* Contact Fields */}
                   <div className="space-y-6 mt-8">
                     <div className="space-y-2">
-                      <Label htmlFor="contactPersonName">
+                      <Label htmlFor="contact_person">
                         Contact Person Name{" "}
                         <span className="text-destructive">*</span>
                       </Label>
                       <Input
-                        id="contactPersonName"
-                        name="contactPersonName"
+                        id="contact_person"
+                        name="contact_person"
                         placeholder="Enter contact person name"
-                        value={formData.contactPersonName}
+                        value={formData.contact_person}
                         onChange={handleInputChange}
                         className={cn(
-                          errors.contactPersonName && "border-destructive"
+                          errors.contact_person && "border-destructive"
                         )}
                       />
-                      {errors.contactPersonName && (
+                      {errors.contact_person && (
                         <p className="text-sm text-destructive">
-                          {errors.contactPersonName}
+                          {errors.contact_person}
                         </p>
                       )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="contactEmail">
+                      <Label htmlFor="contact_email">
                         Contact Email{" "}
                         <span className="text-destructive">*</span>
                       </Label>
                       <Input
-                        id="contactEmail"
-                        name="contactEmail"
+                        id="contact_email"
+                        name="contact_email"
                         type="email"
                         placeholder="Enter contact email"
-                        value={formData.contactEmail}
+                        value={formData.contact_email}
                         onChange={handleInputChange}
                         className={cn(
-                          errors.contactEmail && "border-destructive"
+                          errors.contact_email && "border-destructive"
                         )}
                       />
-                      {errors.contactEmail && (
+                      {errors.contact_email && (
                         <p className="text-sm text-destructive">
-                          {errors.contactEmail}
+                          {errors.contact_email}
                         </p>
                       )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="contactPhone">
-                        Contact Phone{" "}
-                        <span className="text-destructive">*</span>
+                      <Label htmlFor="contact_phone">
+                        Contact Phone
                       </Label>
                       <Input
-                        id="contactPhone"
-                        name="contactPhone"
+                        id="contact_phone"
+                        name="contact_phone"
                         type="tel"
-                        placeholder="Enter contact phone"
-                        value={formData.contactPhone}
+                        placeholder="Enter contact phone (optional)"
+                        value={formData.contact_phone}
                         onChange={handleInputChange}
                         className={cn(
-                          errors.contactPhone && "border-destructive"
+                          errors.contact_phone && "border-destructive"
                         )}
                       />
-                      {errors.contactPhone && (
+                      {errors.contact_phone && (
                         <p className="text-sm text-destructive">
-                          {errors.contactPhone}
+                          {errors.contact_phone}
                         </p>
                       )}
                     </div>
@@ -577,39 +564,39 @@ export default function ClientDialog({
                   {/* Social Media Fields */}
                   <div className="space-y-6 mt-8">
                     <div className="space-y-2">
-                      <Label htmlFor="facebookProfile">Facebook Profile</Label>
+                      <Label htmlFor="facebook_url">Facebook Profile</Label>
                       <Input
-                        id="facebookProfile"
-                        name="facebookProfile"
+                        id="facebook_url"
+                        name="facebook_url"
                         type="url"
                         placeholder="Enter Facebook profile URL"
-                        value={formData.facebookProfile}
+                        value={formData.facebook_url}
                         onChange={handleInputChange}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="instagramProfile">
+                      <Label htmlFor="instagram_url">
                         Instagram Profile
                       </Label>
                       <Input
-                        id="instagramProfile"
-                        name="instagramProfile"
+                        id="instagram_url"
+                        name="instagram_url"
                         type="url"
                         placeholder="Enter Instagram profile URL"
-                        value={formData.instagramProfile}
+                        value={formData.instagram_url}
                         onChange={handleInputChange}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="youtubeUrl">YouTube URL</Label>
+                      <Label htmlFor="youtube_url">YouTube URL</Label>
                       <Input
-                        id="youtubeUrl"
-                        name="youtubeUrl"
+                        id="youtube_url"
+                        name="youtube_url"
                         type="url"
                         placeholder="Enter YouTube channel URL"
-                        value={formData.youtubeUrl}
+                        value={formData.youtube_url}
                         onChange={handleInputChange}
                       />
                     </div>
@@ -618,24 +605,41 @@ export default function ClientDialog({
               )}
             </div>
 
+            {/* Error Display */}
+            {errors.submit && (
+              <div className="absolute bottom-20 left-6 right-6">
+                <div className="bg-destructive/15 border border-destructive/20 rounded-md p-3">
+                  <p className="text-sm text-destructive">{errors.submit}</p>
+                </div>
+              </div>
+            )}
+
             {/* Navigation Buttons */}
             <div className="p-4 bg-background border-t absolute bottom-0 left-0 right-0 flex justify-between">
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleBack}
-                disabled={currentStep === 1}
+                disabled={currentStep === 1 || isSubmitting}
               >
                 Back
               </Button>
 
               {currentStep < steps.length ? (
-                <Button type="button" onClick={handleNext}>
+                <Button 
+                  type="button" 
+                  onClick={handleNext}
+                  disabled={isSubmitting}
+                >
                   Next
                 </Button>
               ) : (
-                <Button type="button" onClick={handleSubmit}>
-                  Submit
+                <Button 
+                  type="button" 
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Creating..." : "Submit"}
                 </Button>
               )}
             </div>
