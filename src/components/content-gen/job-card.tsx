@@ -1,10 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { FileAudio, FileVideo, FileImage, Clock, Download, Eye, Loader2, CheckCircle2, XCircle, Clock3 } from "lucide-react";
+import { FileAudio, FileVideo, FileImage, Clock, Download, Eye, Loader2, CheckCircle2, XCircle, Clock3, MoreVertical, Trash2 } from "lucide-react";
 import type { Job } from "@/lib/api-services";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { PreviewDialog } from "./preview-dialog";
 import { Progress } from "radix-ui";
 
 interface JobCardProps {
@@ -40,33 +49,68 @@ const formatTime = (dateString: string) => {
 const getStatusIcon = (status: string) => {
   switch (status.toLowerCase()) {
     case 'completed':
-      return <CheckCircle2 className="h-3 w-3" />;
+      return <CheckCircle2 className="h-2 w-2 text-accent-foreground" />;
     case 'processing':
-      return <Loader2 className="h-3 w-3 animate-spin" />;
+      return <Loader2 className="h-2 w-2 text-accent-foreground animate-spin" />;
     case 'failed':
-      return <XCircle className="h-3 w-3" />;
+      return <XCircle className="h-2 w-2 text-accent-foreground" />;
     case 'pending':
-      return <Clock3 className="h-3 w-3" />;
+      return <Clock3 className="h-2 w-2 text-accent-foreground" />;
     default:
-      return <Clock3 className="h-3 w-3" />;
+      return <Clock3 className="h-2 w-2 text-accent-foreground" />;
   }
 };
 
 export function JobCard({ job }: JobCardProps) {
-  const handleClick = () => {
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  const handleView = () => {
+    setPreviewOpen(true);
+  };
+
+  const handleDelete = () => {
+    // TODO: Implement delete functionality
+    console.log('Delete job:', job.job_id);
+  };
+
+  const getPreviewUrl = () => {
     if (job.source_url) {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      window.open(`${apiUrl}${job.source_url}`, '_blank', 'noopener,noreferrer');
+      return `${apiUrl}${job.source_url}`;
     }
+    return undefined;
   };
 
   return (
     <Card 
-      className="group hover:shadow-md transition-all cursor-pointer gap-0! overflow-hidden border p-0"
-      onClick={handleClick}
+      className="group hover:shadow-md transition-all overflow-hidden border p-0 gap-0!"
     >
       {/* Thumbnail Section */}
-      <div className="relative w-full aspect-video bg-accent/50 overflow-hidden">
+      <div className="relative w-full aspect-video bg-accent/50 overflow-hidden cursor-pointer" onClick={handleView}>
+        {/* Three-dot menu */}
+        <div className="absolute top-2 right-2 z-10">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <Button 
+                variant="secondary" 
+                size="icon" 
+                className="h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background focus:border-none"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleView} className="cursor-pointer">
+                <Eye className="mr-2 h-4 w-4" />
+                View
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDelete} className="cursor-pointer text-destructive focus:text-destructive">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         {job.file_type === 'video' ? (
           <video 
             src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${job.source_url}`}
@@ -90,13 +134,13 @@ export function JobCard({ job }: JobCardProps) {
       </div>
 
       {/* Content Section */}
-      <div className="p-2 space-y-2">
+      <div className="p-2 space-y-2 border-t">
         {/* Status Badge */}
         <div>
-          <Badge className={`bg-gray-500/10 border-0 text-xs px-2! rounded-xs gap-1`}>
+          <Badge className={`bg-accent border-0 text-xs px-3! rounded-sm gap-1`}>
             {getStatusIcon(job.status)}
-            <span className="capitalize">{job.status}</span>
-          </Badge> 
+            <span className="capitalize text-accent-foreground">{job.status}</span>
+          </Badge>
         </div>
         <h4 
           className="text-sm font-medium line-clamp-1" 
@@ -114,6 +158,14 @@ export function JobCard({ job }: JobCardProps) {
           </div>
         </div>
       </div>
+
+      {/* Preview Dialog */}
+      <PreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        previewUrl={getPreviewUrl()}
+        previewType={job.file_type as 'video' | 'image' | 'audio'}
+      />
     </Card>
   );
 }

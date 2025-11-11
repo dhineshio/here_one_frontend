@@ -49,10 +49,10 @@ export function LanguageSelector({ value, onValueChange }: LanguageSelectorProps
   }, []);
 
   return (
-    <div className="w-full max-w-sm space-y-2"> 
+    <div className="w-full space-y-2"> 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size="lg" className="bg-accent/50 hover:bg-accent cursor-pointer w-full justify-between rounded-sm focus-visible:ring-0 focus-visible:ring-offset-0">
+          <Button size="lg" className="text-foreground bg-accent/50 hover:bg-accent cursor-pointer w-full justify-between rounded-sm focus-visible:ring-0 focus-visible:ring-offset-0">
             <div className="flex items-center">
               <GlobeIcon className="mr-2 h-4 w-4" /> {displayText}
             </div>
@@ -65,7 +65,7 @@ export function LanguageSelector({ value, onValueChange }: LanguageSelectorProps
           className="w-[--radix-dropdown-menu-trigger-width]"
         >
           {LANGUAGES.map((lang) => (
-            <DropdownMenuItem key={lang.value} onClick={() => onValueChange(lang.value)}>
+            <DropdownMenuItem className="text-foreground" key={lang.value} onClick={() => onValueChange(lang.value)}>
               {lang.label}
             </DropdownMenuItem>
           ))}

@@ -13,7 +13,6 @@ import { LanguageSelector } from "@/components/content-gen/language-selector";
 import { Label } from "@/components/ui/label";
 import { CaptionSelector } from "@/components/content-gen/caption-selector";
 import { DescriptionSelector } from "@/components/content-gen/description-selector";
-import { Separator } from "radix-ui";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkle } from "lucide-react";
@@ -124,7 +123,7 @@ export default function ContentGen() {
             
             {/* Fixed Bottom Section */}
             <div className="border-t p-4">
-              <Textarea placeholder="Enter your prompt here" className="w-full h-24 resize-none"></Textarea>
+              <Textarea placeholder="Enter your prompt here" className="w-full h-20 resize-none"></Textarea>
               <Button className="mt-2 w-full mb-6" size="lg"><Sparkle className="mr-2 h-4 w-4" /> Generate</Button>
             </div>
           </div>
