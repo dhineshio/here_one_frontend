@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import ClientDialog from "@/components/client_dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClients } from "@/contexts/client-context";
+import { getImageUrl } from "@/lib/api-services";
 
 export default function Clients() {
   const { isLoading } = useAuth();
@@ -125,18 +126,18 @@ export default function Clients() {
                     {/* Row 1: Avatar, Name/Email, 3-dot menu */}
                     <div className="flex items-start justify-between mb-2 p-3 sm:p-4">
                       <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
-                        <Avatar className="flex-shrink-0">
+                        <Avatar className="flex-shrink-0 h-12 w-12 rounded-md">
                           <AvatarImage
-                            src={client.brand_logo || ""}
+                            src={getImageUrl(client.brand_logo) || ""}
                             alt={client.client_name}
+                            className="object-cover"
                           />
-                          <AvatarFallback className="bg-primary">
+                          <AvatarFallback className="bg-primary rounded-md text-lg font-semibold">
                             {client.client_name
                               .split(" ")
                               .map((n) => n[0])
                               .join("")
-                              .toUpperCase()
-                              .slice(0, 2)}
+                              .toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0 flex-1">

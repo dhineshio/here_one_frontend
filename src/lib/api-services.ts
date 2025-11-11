@@ -27,6 +27,28 @@ export interface GetClientsResponse {
   count: number;
 }
 
+export interface CreateClientRequest {
+  client_name: string;
+  contact_person: string;
+  contact_email: string;
+  contact_phone?: string;
+  industry_type: string;
+  brand_logo?: string; // Base64 encoded image data
+  facebook_url?: string;
+  instagram_url?: string;
+  youtube_url?: string;
+  linkedin_url?: string;
+  twitter_url?: string;
+  tiktok_url?: string;
+  preferred_post_time?: string;
+}
+
+export interface CreateClientResponse {
+  success: boolean;
+  message: string;
+  data: Client;
+}
+
 export interface ApiError {
   success: boolean;
   message: string;
@@ -79,6 +101,20 @@ export class ClientService {
       return response.data;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch clients';
+      throw {
+        success: false,
+        message: errorMessage,
+      } as ApiError;
+    }
+  }
+
+  // Create a new client
+  static async createClient(clientData: CreateClientRequest): Promise<CreateClientResponse> {
+    try {
+      const response = await api.post('/api/clients/add-client', clientData);
+      return response.data;
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create client';
       throw {
         success: false,
         message: errorMessage,
@@ -161,5 +197,19 @@ export class TranscribeService {
     }
   }
 }
+
+// Utility function to get full image URL
+export const getImageUrl = (imagePath: string | null): string | undefined => {
+  if (!imagePath) return undefined;
+  
+  // If it's already a full URL (starts with http/https) or base64, return as is
+  if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
+    return imagePath;
+  }
+  
+  // If it's a relative path, append the base URL
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+  return `${baseUrl}${imagePath}`;
+};
 
 export default ClientService;

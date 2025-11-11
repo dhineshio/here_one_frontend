@@ -21,6 +21,7 @@ import {
 import ClientDialog from "@/components/client_dialog";
 import { useClients } from "@/contexts/client-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getImageUrl } from "@/lib/api-services";
 
 export function ClientSwitcher() {
   const { isMobile } = useSidebar();
@@ -77,8 +78,9 @@ export function ClientSwitcher() {
               >
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage
-                    src={activeClient.brand_logo || ""}
+                    src={getImageUrl(activeClient.brand_logo) || ""}
                     alt={activeClient.client_name}
+                    className="object-cover"
                   />
                   <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">
                     {activeClient.client_name
@@ -117,8 +119,9 @@ export function ClientSwitcher() {
                 >
                   <Avatar className="h-6 w-6 rounded-md">
                     <AvatarImage
-                      src={client.brand_logo || ""}
+                      src={getImageUrl(client.brand_logo) || ""}
                       alt={client.client_name}
+                      className="object-cover"
                     />
                     <AvatarFallback className="rounded-md text-xs">
                       {client.client_name
